@@ -70,7 +70,7 @@ export class WritePage {
         return {
             title: document.getElementById('in-title').value.trim(),
             content: document.getElementById('in-content').value.trim(),
-            author: document.getElementById('in-author').value.trim() || 'Sylvan',
+            author: document.getElementById('in-author').value.trim() || 'Anon',
             space: document.getElementById('in-space').value,
             mood: this.selectedMood
         };
