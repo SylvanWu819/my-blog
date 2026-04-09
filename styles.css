@@ -1,13 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;700&family=Inter:wght@200;400;600&display=swap');
 
 :root { 
-    --bg: #ffffff; 
+    --bg: #fafaf8; 
     --text: #1a1a1a; 
     --accent: #555555; 
     --border: #eeeeee;
 }
+.dim { 
+    --bg: #d5d5d0; 
+    --text: #2a2a2a; 
+    --accent: #666666; 
+    --border: #b8b8b5;
+}
 .dark { 
-    --bg: #0d0d0d; 
+    --bg: #1a1a18; 
     --text: #e5e5e5; 
     --accent: #a0a0a0; 
     --border: #222222;
@@ -17,9 +23,10 @@ body {
     font-family: 'Inter', sans-serif; 
     background: var(--bg); 
     color: var(--text); 
-    transition: background 0.6s ease;
+    transition: background 0.3s ease, color 0.3s ease;
     overflow-x: hidden;
     margin: 0;
+    will-change: background;
 }
 
 .serif { font-family: 'Noto Serif SC', serif; }
@@ -53,6 +60,34 @@ body {
 .space-trigger:hover + #space-nav,
 #space-nav:hover {
     left: 0;
+}
+
+/* 左侧切换提示标志 */
+.space-hint {
+    position: fixed;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+    transform-origin: center;
+    z-index: 98;
+    pointer-events: none;
+    opacity: 0.25;
+    transition: opacity 0.3s ease;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-weight: 400;
+}
+.space-hint::before {
+    content: '◂';
+    margin-right: 8px;
+    display: inline-block;
+    transform: rotate(90deg);
+    font-size: 8px;
+}
+.space-trigger:hover ~ .space-hint,
+#space-nav:hover ~ .space-hint {
+    opacity: 0;
 }
 .space-item {
     padding: 16px 32px;
@@ -341,4 +376,62 @@ main {
 /* 列表容器淡入效果 */
 #list-container {
     transition: opacity 0.3s ease;
+}
+
+/* 主题切换光束动画 */
+.theme-transition-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9997;
+    pointer-events: none;
+    opacity: 0;
+    will-change: transform, opacity;
+    transform: translate3d(0, 0, 0);
+}
+
+/* 暗到亮：光波扩散（优化版） */
+.theme-transition-overlay.light-burst {
+    background: radial-gradient(circle at var(--burst-x, 50%) var(--burst-y, 50%), 
+        rgba(255, 255, 255, 0.95) 0%, 
+        rgba(255, 255, 255, 0.8) 15%,
+        rgba(255, 255, 255, 0) 60%);
+    animation: light-burst 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes light-burst {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, 0, 0) scale(0.3);
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translate3d(0, 0, 0) scale(2.5);
+    }
+}
+
+/* 亮到暗：整体渐暗（优化版） */
+.theme-transition-overlay.dark-fade {
+    background: radial-gradient(circle at 50% 50%, 
+        transparent 0%, 
+        rgba(0, 0, 0, 0.2) 30%,
+        rgba(0, 0, 0, 0.8) 100%);
+    animation: dark-fade 0.8s ease-out forwards;
+}
+
+@keyframes dark-fade {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, 0, 0) scale(1.05);
+    }
+    50% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate3d(0, 0, 0) scale(0.98);
+    }
 }

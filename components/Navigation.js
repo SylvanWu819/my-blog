@@ -36,6 +36,6 @@ export class Navigation {
         document.getElementById('nav-home')?.addEventListener('click', () => this.onNavigate('home'));
         document.getElementById('nav-archives')?.addEventListener('click', () => this.onNavigate('home'));
         document.getElementById('nav-write')?.addEventListener('click', () => this.onNavigate('write'));
-        document.getElementById('nav-theme')?.addEventListener('click', () => this.onToggleDarkMode());
+        document.getElementById('nav-theme')?.addEventListener('click', (e) => this.onToggleDarkMode(e));
     }
 }
