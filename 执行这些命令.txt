@@ -1,0 +1,76 @@
+========================================
+复制以下命令到命令提示符(CMD)中执行
+========================================
+
+方法1: 覆盖原仓库（推荐，只保留新的组件化版本）
+----------------------------------------
+
+cd C:\LibraFuture\Libra
+git init
+git add .
+git commit -m "组件化重构完成"
+git branch -M main
+git remote add origin https://github.com/SylvanWu819/my-blog.git
+git push -f origin main
+
+
+方法2: 保留原文件，添加Libra文件夹
+----------------------------------------
+
+cd C:\LibraFuture
+git clone https://github.com/SylvanWu819/my-blog.git
+xcopy Libra my-blog\Libra\ /E /I /Y
+cd my-blog
+git add Libra/
+git commit -m "添加组件化版本"
+git push origin main
+
+
+========================================
+执行步骤：
+========================================
+
+1. 按 Win + R
+2. 输入 cmd 回车
+3. 复制上面的命令（选择方法1或方法2）
+4. 在CMD窗口右键粘贴
+5. 按回车执行
+
+第一次推送会弹出登录窗口，用你的GitHub账号登录即可。
+
+========================================
+推送成功后：
+========================================
+
+1. 访问你的仓库：
+   https://github.com/SylvanWu819/my-blog
+
+2. 设置GitHub Pages：
+   - 点击 Settings
+   - 左侧找到 Pages
+   - Source 选择 main 分支
+   - 文件夹选择 / (root) 或 /Libra
+   - 点击 Save
+
+3. 等待1-2分钟后访问：
+   https://sylvanwu819.github.io/my-blog/
+
+========================================
+如果遇到问题：
+========================================
+
+问题1: 提示 "fatal: remote origin already exists"
+解决: git remote remove origin
+     然后重新执行 git remote add origin ...
+
+问题2: 推送被拒绝
+解决: git pull origin main --allow-unrelated-histories
+     然后重新 git push
+
+问题3: 需要登录
+解决: 在弹出的窗口中用GitHub账号登录
+
+问题4: 页面显示不正常
+解决: 修改 index.html 中的资源路径为相对路径
+     href="styles.css" 改为 href="./styles.css"
+     src="app.js" 改为 src="./app.js"

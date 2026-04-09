@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Libra | Inspiration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="antialiased">
+    <!-- 空间导航触发器 -->
+    <div class="space-trigger"></div>
+
+    <!-- 左侧空间导航 -->
+    <nav id="space-nav">
+        <div class="space-item active serif" data-space="此间">此间</div>
+        <div class="space-item serif" data-space="观市">观市</div>
+        <div class="space-item serif" data-space="碎语">碎语</div>
+        <div class="space-item serif" data-space="札记">札记</div>
+        <div class="space-item serif" data-space="长文">长文</div>
+        <div class="space-item serif" data-space="途中">途中</div>
+        <div class="space-item serif" data-space="一隅">一隅</div>
+    </nav>
+
+    <!-- 空间切换诗句提示 -->
+    <div id="space-poem-overlay">
+        <p id="space-poem-text" class="serif"></p>
+    </div>
+
+    <!-- 加载动画 -->
+    <div id="loader">
+        <div class="libra-container">
+            <svg class="libra-svg text-gray-400 mb-8" viewBox="0 0 24 24">
+                <path d="M12 5v14M9 21h6" opacity="0.5"/>
+                <g class="libra-beam">
+                    <path d="M4 10h16" />
+                    <g class="libra-pan-l">
+                        <path d="M4 10l-1 4h2l-1-4z" fill="currentColor" opacity="0.2"/>
+                        <path d="M2 14h4" />
+                    </g>
+                    <g class="libra-pan-r">
+                        <path d="M20 10l-1 4h2l-1-4z" fill="currentColor" opacity="0.2"/>
+                        <path d="M18 14h4" />
+                    </g>
+                </g>
+            </svg>
+        </div>
+        <div class="flex flex-col items-center space-y-4">
+            <p id="loader-status" class="text-[10px] tracking-[0.5em] uppercase opacity-40 serif sync-active">Connecting Cloud</p>
+            <button id="skip-btn" class="text-[9px] border border-gray-200 dark:border-zinc-800 px-6 py-2 rounded-full opacity-40 hover:opacity-100 transition-all uppercase tracking-widest">Skip</button>
+        </div>
+    </div>
+    
+    <!-- 顶部导航 -->
+    <nav class="glass fixed top-0 w-full z-50">
+        <div class="max-w-5xl mx-auto px-8 py-6 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer" id="nav-home">
+                <h1 class="font-bold text-xl tracking-[0.3em] uppercase">Libra</h1>
+                <span class="text-xs opacity-40 serif" id="current-space-indicator">· 此间</span>
+            </div>
+            <div class="flex gap-8 text-[11px] font-bold uppercase tracking-widest items-center">
+                <button id="nav-archives" class="hover:opacity-50">Archives</button>
+                <button id="nav-write" class="border border-current px-5 py-2">Write</button>
+                <button id="nav-theme"><i id="theme-icon" class="fas fa-moon opacity-50"></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-48 pb-32 px-8 max-w-4xl mx-auto">
+        <!-- 首页 -->
+        <section id="home">
+            <div class="mb-20">
+                <h2 id="space-title" class="text-6xl font-light serif mb-4">此间。</h2>
+                <p id="poem-display" class="text-gray-400 text-sm serif italic opacity-60">"心远地自偏"</p>
+            </div>
+            <div id="list-container" class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <!-- 列表动态加载 -->
+            </div>
+        </section>
+
+        <!-- 写作页面 -->
+        <section id="write" class="hidden">
+            <div class="mb-10 flex flex-col gap-6">
+                <input id="in-title" type="text" placeholder="TITLE" class="bg-transparent text-4xl font-bold serif outline-none border-none w-full">
+                <input id="in-author" type="text" placeholder="Author Name" class="bg-transparent text-sm opacity-60 outline-none border-none w-full">
+                <div>
+                    <p class="text-xs opacity-40 mb-3 uppercase tracking-widest">Space · 发布至</p>
+                    <select id="in-space" class="bg-transparent text-lg serif opacity-80 outline-none border border-current px-4 py-3 rounded cursor-pointer hover:opacity-100 transition-opacity w-full">
+                        <option value="此间">此间 · 氛围</option>
+                        <option value="观市">观市 · 市场</option>
+                        <option value="碎语">碎语 · 即时</option>
+                        <option value="札记">札记 · 思考</option>
+                        <option value="长文">长文 · 深度</option>
+                        <option value="途中">途中 · 过程</option>
+                        <option value="一隅">一隅 · 边角</option>
+                    </select>
+                </div>
+                <div>
+                    <p class="text-xs opacity-40 mb-3 uppercase tracking-widest">Mood</p>
+                    <div class="mood-selector" id="mood-selector">
+                        <!-- 心情选项动态生成 -->
+                    </div>
+                </div>
+            </div>
+            <textarea id="in-content" rows="12" placeholder="Start recording..." class="w-full text-lg bg-transparent outline-none resize-none leading-relaxed border-none"></textarea>
+            <div class="mt-6 flex items-center gap-4">
+                <input type="file" id="image-upload" accept="image/*" style="display:none">
+                <button id="add-image-btn" class="text-xs opacity-40 hover:opacity-100 transition-opacity flex items-center gap-2">
+                    <i class="fas fa-image"></i> Add Image
+                </button>
+                <span id="upload-status" class="text-xs opacity-40"></span>
+            </div>
+            <div class="mt-10 flex justify-end">
+                <button id="pub-btn" class="bg-black text-white dark:bg-white dark:text-black px-12 py-4 font-bold text-xs uppercase tracking-widest">Publish</button>
+            </div>
+        </section>
+
+        <!-- 详情页面 -->
+        <section id="detail" class="hidden"></section>
+    </main>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
