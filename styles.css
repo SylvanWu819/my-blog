@@ -83,7 +83,7 @@ body {
     justify-content: center;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.6s ease;
+    transition: opacity 0.4s ease;
 }
 #space-poem-overlay.show {
     opacity: 1;
@@ -94,7 +94,7 @@ body {
     letter-spacing: 0.2em;
     opacity: 0;
     transform: translateY(20px);
-    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 #space-poem-overlay.show #space-poem-text {
     opacity: 1;
@@ -287,4 +287,58 @@ body {
     border-radius: 12px;
     margin-bottom: 16px;
     background: var(--border);
+    transition: opacity 0.3s ease;
+}
+.post-preview-image[loading="lazy"] {
+    opacity: 0;
+}
+.post-preview-image.loaded {
+    opacity: 1;
+}
+
+/* 页面切换动画 */
+main > section {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    will-change: opacity, transform;
+}
+main > section.hidden {
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+    position: absolute;
+    width: 100%;
+}
+main > section:not(.hidden) {
+    opacity: 1;
+    transform: translateY(0);
+    position: relative;
+}
+
+/* 预加载优化 */
+main {
+    position: relative;
+    min-height: 100vh;
+}
+
+/* 卡片动画优化 - 添加硬件加速 */
+.post-card-inner {
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+/* 空间导航优化 */
+#space-nav {
+    will-change: left;
+    backface-visibility: hidden;
+}
+
+/* 诗句切换优化 */
+#poem-display {
+    will-change: opacity;
+}
+
+/* 列表容器淡入效果 */
+#list-container {
+    transition: opacity 0.3s ease;
 }

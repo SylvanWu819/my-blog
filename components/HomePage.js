@@ -40,7 +40,7 @@ export class HomePage {
             return `
                 <div class="post-card cursor-pointer" data-post-id="${p.id}">
                     <div class="post-card-inner p-8" style="animation-delay: ${animationDelay}s">
-                        ${imageUrl ? `<img src="${imageUrl}" alt="${p.title}" class="post-preview-image" loading="lazy" onerror="this.style.display='none'">` : ''}
+                        ${imageUrl ? `<img src="${imageUrl}" alt="${p.title}" class="post-preview-image" loading="lazy" onload="this.classList.add('loaded')" onerror="this.style.display='none'">` : ''}
                         <div class="flex items-center gap-2 mb-4">
                             <div class="text-[9px] opacity-30 tracking-widest uppercase">${p.date || '未知日期'}</div>
                             ${p.mood ? `<span class="text-lg">${p.mood}</span>` : ''}
@@ -56,10 +56,37 @@ export class HomePage {
     updatePosts(posts) {
         this.posts = posts;
         const container = document.getElementById('list-container');
-        if (container) {
-            container.innerHTML = this.renderPostList();
-            this.bindPostClickEvents();
+        if (!container) return;
+        
+        // 如果没有文章,立即显示空状态
+        if (posts.length === 0) {
+            container.innerHTML = '<p class="text-gray-400 text-sm opacity-60">暂无内容</p>';
+            return;
         }
+        
+        // 先清空容器,避免旧内容闪烁
+        container.style.opacity = '0';
+        
+        // 使用 requestAnimationFrame 优化渲染
+        requestAnimationFrame(() => {
+            // 使用 DocumentFragment 批量更新 DOM
+            const fragment = document.createDocumentFragment();
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = this.renderPostList();
+            
+            while (tempDiv.firstChild) {
+                fragment.appendChild(tempDiv.firstChild);
+            }
+            
+            container.innerHTML = '';
+            container.appendChild(fragment);
+            this.bindPostClickEvents();
+            
+            // 内容加载完成后淡入
+            requestAnimationFrame(() => {
+                container.style.opacity = '1';
+            });
+        });
     }
 
     updateSpace(spaceName) {
