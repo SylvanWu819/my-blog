@@ -32,7 +32,7 @@ export class App {
         this.loader = new Loader();
         this.navigation = new Navigation(
             (page) => this.navigate(page),
-            () => this.themeService.toggleTheme()
+            (e) => this.themeService.toggleTheme(e)
         );
         this.spaceNav = new SpaceNav((space) => this.switchSpace(space));
         this.homePage = new HomePage((postId) => this.showDetail(postId));
