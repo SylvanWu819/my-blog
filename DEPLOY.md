@@ -55,7 +55,9 @@ GitHub会显示命令，执行以下命令：
 
 ```bash
 # 添加远程仓库（替换成你的GitHub用户名）
-git remote add origin https://github.com/你的用户名/libra-blog.git
+git remote add origin https://github.com/SylvanWu819/my-blog.git
+
+
 
 # 推送到GitHub
 git branch -M main
