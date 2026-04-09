@@ -28,19 +28,19 @@ export class DetailPage {
 
         return `
             <section id="detail">
-                <div class="max-w-2xl mx-auto">
+                <div class="max-w-3xl mx-auto px-8">
                     <button id="back-btn" class="text-[10px] opacity-40 uppercase tracking-widest mb-12 hover:opacity-100">← Back</button>
                     <div class="flex items-center gap-3 mb-4">
                         <h1 class="text-5xl font-bold serif">${post.title}</h1>
                         ${post.mood ? `<span class="text-4xl">${post.mood}</span>` : ''}
                     </div>
-                    <div class="text-[10px] opacity-30 tracking-widest mb-8 uppercase">
+                    <div class="text-[10px] opacity-30 tracking-widest mb-12 uppercase">
                         ${post.date || '未知日期'} ${post.author_name ? '· ' + post.author_name : ''}
                     </div>
-                    <div class="prose dark:prose-invert max-w-none text-xl leading-relaxed serif space-y-4">
+                    <div class="article-content">
                         ${marked.parse(post.content || '')}
                     </div>
-                    <div class="flex gap-4 flex-wrap mt-12 pt-8 border-t border-current opacity-20">
+                    <div class="flex gap-4 flex-wrap mt-16 pt-8 border-t border-current opacity-20">
                         ${reactionsHtml}
                     </div>
                 </div>

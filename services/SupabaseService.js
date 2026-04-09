@@ -52,6 +52,8 @@ export class SupabaseService {
 
     async updateReaction(postId, reactions) {
         try {
+            console.log('Updating reaction in database:', { postId, reactions });
+            
             const response = await fetch(`${this.SUPABASE_URL}/rest/v1/posts?id=eq.${postId}`, {
                 method: 'PATCH',
                 headers: {
@@ -64,9 +66,12 @@ export class SupabaseService {
             });
             
             if (!response.ok) {
-                console.error('Failed to update reaction');
+                const errorText = await response.text();
+                console.error('Failed to update reaction:', response.status, errorText);
                 return false;
             }
+            
+            console.log('Reaction updated successfully');
             return true;
         } catch(e) {
             console.error('Update reaction error:', e);

@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;700&family=Inter:wght@200;400;600&display=swap');
+@import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.1.0/style.css');
 
 :root { 
     --bg: #fafaf8; 
@@ -30,6 +31,70 @@ body {
 }
 
 .serif { font-family: 'Noto Serif SC', serif; }
+
+/* 详情页文章内容样式 */
+#detail .article-content {
+    font-family: 'LXGW WenKai', 'Noto Serif SC', serif;
+    font-size: 1.125rem;
+    line-height: 2.2;
+    letter-spacing: 0.02em;
+}
+
+#detail .article-content p {
+    margin-bottom: 1.5rem;
+}
+
+#detail .article-content h1,
+#detail .article-content h2,
+#detail .article-content h3 {
+    font-family: 'LXGW WenKai', 'Noto Serif SC', serif;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+#detail .article-content h1 { font-size: 2rem; }
+#detail .article-content h2 { font-size: 1.5rem; }
+#detail .article-content h3 { font-size: 1.25rem; }
+
+#detail .article-content ul,
+#detail .article-content ol {
+    margin-left: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+#detail .article-content li {
+    margin-bottom: 0.5rem;
+}
+
+#detail .article-content blockquote {
+    border-left: 3px solid var(--border);
+    padding-left: 1.5rem;
+    margin: 1.5rem 0;
+    opacity: 0.8;
+    font-style: italic;
+}
+
+#detail .article-content code {
+    background: var(--border);
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+#detail .article-content pre {
+    background: var(--border);
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+}
+
+#detail .article-content img {
+    max-width: 100%;
+    border-radius: 8px;
+    margin: 2rem 0;
+}
 
 /* 左侧空间导航 */
 #space-nav {

@@ -246,13 +246,30 @@ export class App {
 
     async toggleReaction(postId, emoji) {
         const post = this.posts.find(p => p.id === postId);
-        if (!post) return;
+        if (!post) {
+            console.error('Post not found:', postId);
+            return;
+        }
         
-        const newReactions = await this.reactionService.toggleReaction(post, emoji);
-        post.reactions = newReactions;
+        console.log('Toggling reaction:', { postId, emoji, currentReactions: post.reactions });
         
-        const userReaction = this.reactionService.getUserReaction(postId);
-        this.detailPage.updateContent(post, userReaction);
+        try {
+            const newReactions = await this.reactionService.toggleReaction(post, emoji);
+            post.reactions = newReactions;
+            
+            console.log('New reactions:', newReactions);
+            
+            const userReaction = this.reactionService.getUserReaction(postId);
+            this.detailPage.updateContent(post, userReaction);
+        } catch(e) {
+            console.error('Toggle reaction error:', e);
+            this.errorMonitor.captureError(e, {
+                context: 'toggle_reaction',
+                postId,
+                emoji
+            });
+            alert('点赞失败，请稍后重试');
+        }
     }
 
     async handleImageUpload(event) {
