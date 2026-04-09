@@ -1,4 +1,18 @@
-# Libra 博客应用 - 组件化重构
+# Libra 博客
+
+一个极简优雅的个人博客系统，支持多空间分类、三档位主题切换、动态光影效果。
+
+## ✨ 特性
+
+- 🎨 三档位主题系统（亮/中/暗）+ 光束过渡动画
+- 📚 七个独立空间分类（此间、观市、碎语、札记、长文、途中、一隅）
+- 🎭 心情标签系统（30+ emoji）
+- 💫 优雅的动画效果（呼吸卡片、诗句轮播、空间切换）
+- 📝 Markdown 写作支持
+- 🖼️ 图片上传功能
+- 💝 文章点赞反应
+- 🌙 淡淡纸黄背景，护眼舒适
+- 🎯 左侧空间导航提示
 
 ## 项目结构
 
@@ -17,8 +31,9 @@ Libra/
 │   └── SpacePoemOverlay.js # 空间切换提示
 └── services/               # 业务服务
     ├── SupabaseService.js  # 数据库服务
-    ├── ThemeService.js     # 主题管理
-    └── ReactionService.js  # 点赞功能
+    ├── ThemeService.js     # 主题管理（三档位）
+    ├── ReactionService.js  # 点赞功能
+    └── ErrorMonitorService.js # 错误监控
 ```
 
 ## 组件说明
@@ -68,15 +83,42 @@ Libra/
    - updateReaction() - 更新点赞
    - uploadImage() - 上传图片
 
-2. **ThemeService.js** - 主题管理
-   - loadTheme() - 加载保存的主题
-   - toggleTheme() - 切换明暗主题
+2. **ThemeService.js** - 三档位主题管理
+   - 亮模式（#fafaf8）- 月亮图标
+   - 中模式（#d5d5d0）- 半月图标
+   - 暗模式（#1a1a18）- 太阳图标
+   - 亮暗切换：光束动画（1秒）
+   - 中间态切换：简单渐变（0.3秒）
    - localStorage持久化
 
 3. **ReactionService.js** - 点赞功能
    - toggleReaction() - 切换点赞状态
    - getUserReaction() - 获取用户点赞
    - localStorage记录用户行为
+
+4. **ErrorMonitorService.js** - 错误监控
+   - Sentry 集成
+   - 全局错误捕获
+   - 用户行为追踪
+
+## 🎨 设计亮点
+
+### 三档位主题系统
+- 点击月亮图标循环切换：亮 → 中 → 暗 → 亮
+- 亮暗直接切换时触发光束动画（像光打进黑暗空间）
+- 中间态切换使用流畅渐变
+- GPU 加速优化，流畅不卡顿
+
+### 空间导航
+- 左侧边缘悬停显示导航菜单
+- 竖向 "SPACES" 提示标志
+- 切换空间时显示诗句过渡
+
+### 视觉效果
+- 淡淡纸黄背景（#fafaf8），护眼舒适
+- 卡片呼吸动画
+- 诗句轮播
+- 天平加载动画
 
 ## 使用方法
 
@@ -102,11 +144,12 @@ npx serve
 
 ## 主要改进
 
-1. **模块化** - 每个组件独立文件，职责清晰
-2. **可维护性** - 代码分离，易于修改和扩展
-3. **可复用性** - 组件可以在其他项目中复用
-4. **可测试性** - 独立的服务层便于单元测试
-5. **关注点分离** - UI、业务逻辑、数据访问分层
+1. **模块化架构** - 每个组件独立文件，职责清晰
+2. **三档位主题** - 亮/中/暗三档，光束动画过渡
+3. **性能优化** - GPU 加速、will-change 优化、动画流畅
+4. **用户体验** - 左侧提示、诗句过渡、呼吸动画
+5. **可维护性** - 代码分离，易于修改和扩展
+6. **错误监控** - Sentry 集成，实时追踪问题
 
 ## 技术栈
 
@@ -115,9 +158,19 @@ npx serve
 - Marked.js (Markdown解析)
 - Supabase (后端数据库)
 - Font Awesome (图标)
+- Sentry (错误监控)
+
+## 部署
+
+项目使用 GitHub Pages 部署，访问：[你的域名]
+
+自动部署脚本：
+- Windows: `deploy.bat`
+- Linux/Mac: `deploy.sh`
 
 ## 注意事项
 
-- 需要配置Supabase的CORS设置
-- 图片上传需要创建`post-images` bucket
-- 数据库表需要包含reactions字段(JSONB类型)
+- 需要配置 Supabase 的 CORS 设置
+- 图片上传需要创建 `post-images` bucket
+- 数据库表需要包含 reactions 字段（JSONB 类型）
+- 需要配置 Sentry DSN（可选）
