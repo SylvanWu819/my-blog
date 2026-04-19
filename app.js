@@ -175,11 +175,15 @@ export class App {
     }
 
     async switchSpace(spaceName) {
-        if (spaceName === this.currentSpace) return;
-        
-        // 使用防抖避免快速切换
+        if (spaceName === this.currentSpace && this.currentPage !== 'detail') return;
         if (this.switchingSpace) return;
         this.switchingSpace = true;
+
+        // 如果在详情页，先导航回首页
+        if (this.currentPage === 'detail') {
+            this.navigate('home');
+            await new Promise(resolve => setTimeout(resolve, 300));
+        }
         
         // 立即更新导航状态
         this.spaceNav.updateActive(spaceName);
