@@ -27,6 +27,14 @@ export class HomePage {
         `;
     }
 
+    formatDate(dateStr) {
+        if (!dateStr) return '未知日期';
+        const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+        const d = new Date(dateStr);
+        if (isNaN(d)) return dateStr;
+        return `${months[d.getMonth()]} ${String(d.getDate()).padStart(2, '0')}`;
+    }
+
     renderPostList() {
         if (this.posts.length === 0) {
             return '<p class="text-gray-400 text-sm opacity-60">暂无内容</p>';
@@ -42,7 +50,7 @@ export class HomePage {
                     <div class="post-card-inner p-8" style="animation-delay: ${animationDelay}s">
                         ${imageUrl ? `<img src="${imageUrl}" alt="${p.title}" class="post-preview-image" loading="lazy" onload="this.classList.add('loaded')" onerror="this.style.display='none'">` : ''}
                         <div class="flex items-center gap-2 mb-4">
-                            <div class="text-[9px] opacity-30 tracking-widest uppercase">${p.date || '未知日期'}</div>
+                            <div class="text-[9px] opacity-30 tracking-widest uppercase">${this.formatDate(p.date)}</div>
                             ${p.mood ? `<span class="text-lg">${p.mood}</span>` : ''}
                         </div>
                         <h3 class="text-xl font-bold serif mb-3">${p.title}</h3>

@@ -38,6 +38,9 @@ export class WritePage {
                 <div class="write-field-wrap pb-2">
                     <textarea id="in-content" rows="12" placeholder="Start recording..." class="w-full text-lg bg-transparent outline-none resize-none leading-relaxed border-none"></textarea>
                 </div>
+                <div class="mt-2 flex justify-end">
+                    <span id="word-count" class="text-[10px] opacity-20 tracking-widest">0 字</span>
+                </div>
                 <div class="mt-6 flex items-center gap-4">
                     <input type="file" id="image-upload" accept="image/*" style="display:none">
                     <button id="add-image-btn" class="text-xs opacity-40 hover:opacity-100 transition-opacity flex items-center gap-2">
@@ -132,6 +135,13 @@ export class WritePage {
 
         document.getElementById('image-upload')?.addEventListener('change', (e) => {
             this.onImageUpload(e);
+        });
+
+        // 字数统计
+        document.getElementById('in-content')?.addEventListener('input', (e) => {
+            const len = e.target.value.replace(/\s/g, '').length;
+            const el = document.getElementById('word-count');
+            if (el) el.textContent = `${len} 字`;
         });
     }
 }

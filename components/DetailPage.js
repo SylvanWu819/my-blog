@@ -28,6 +28,7 @@ export class DetailPage {
 
         return `
             <section id="detail">
+                <div id="read-progress-bar"></div>
                 <div class="max-w-3xl mx-auto px-8">
                     <button id="back-btn" class="group flex items-center gap-2 text-[10px] opacity-40 uppercase tracking-widest mb-12 hover:opacity-100 transition-opacity">
                         <span class="inline-block transition-transform group-hover:-translate-x-1">←</span> Back
@@ -62,6 +63,16 @@ export class DetailPage {
         document.getElementById('back-btn')?.addEventListener('click', () => {
             this.onBack();
         });
+
+        // 阅读进度条
+        const onScroll = () => {
+            const bar = document.getElementById('read-progress-bar');
+            if (!bar) { window.removeEventListener('scroll', onScroll); return; }
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            bar.style.width = docHeight > 0 ? (scrollTop / docHeight * 100) + '%' : '0%';
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
 
         document.querySelectorAll('.reaction-btn').forEach(btn => {
             btn.addEventListener('click', () => {
