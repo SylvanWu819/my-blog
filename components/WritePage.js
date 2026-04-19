@@ -44,7 +44,7 @@ export class WritePage {
                 <div class="mt-6 flex items-center gap-4">
                     <input type="file" id="image-upload" accept="image/*" style="display:none">
                     <button id="add-image-btn" class="text-xs opacity-40 hover:opacity-100 transition-opacity flex items-center gap-2">
-                        <i class="fas fa-image"></i> Add Image
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Add Image
                     </button>
                     <span id="upload-status" class="text-xs opacity-40"></span>
                 </div>

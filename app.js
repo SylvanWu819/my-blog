@@ -32,7 +32,8 @@ export class App {
         this.loader = new Loader();
         this.navigation = new Navigation(
             (page) => this.navigate(page),
-            (e) => this.themeService.toggleTheme(e)
+            (e) => this.themeService.toggleTheme(e),
+            () => this.navigateHome()
         );
         this.spaceNav = new SpaceNav((space) => this.switchSpace(space));
         this.homePage = new HomePage((postId) => this.showDetail(postId));
@@ -169,6 +170,14 @@ export class App {
                     this.writePage.selectMood(option.dataset.mood);
                 });
             });
+        }
+    }
+
+    navigateHome() {
+        this.homeScrollY = 0;
+        this.navigate('home');
+        if (this.currentSpace !== '此间') {
+            this.switchSpace('此间');
         }
     }
 
