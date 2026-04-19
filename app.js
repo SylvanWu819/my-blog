@@ -65,15 +65,8 @@ export class App {
     }
 
     async init() {
-        console.log('=== App Init ===');
-        
-        // 绑定事件
         this.bindEvents();
-        
-        // 加载主题
         this.themeService.loadTheme();
-        
-        // 设置超时
         setTimeout(() => this.loader.dismiss("Timeout Entry"), 8000);
         
         try {
@@ -81,14 +74,12 @@ export class App {
             const data = await this.supabaseService.fetchPosts();
             
             if (!data) {
-                console.warn('Failed to load posts');
                 this.posts = [];
                 this.homePage.updatePosts([]);
                 this.loader.dismiss("No Data");
                 return;
             }
-            
-            console.log('Posts loaded:', data.length);
+
             this.posts = data.map(p => ({
                 ...p,
                 space: p.space || '此间'
@@ -296,13 +287,8 @@ export class App {
                 newPost.mood = formData.mood;
             }
             
-            console.log('Publishing post:', newPost);
             const result = await this.supabaseService.insertPost(newPost);
-            console.log('Insert result:', result);
-            
-            if (!result) {
-                throw new Error('Failed to insert post');
-            }
+            if (!result) throw new Error('Failed to insert post');
             
             this.writePage.clearForm();
             

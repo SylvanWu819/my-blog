@@ -2,7 +2,6 @@
 export class ErrorMonitorService {
     constructor() {
         this.sentryEnabled = false;
-        this.supabaseService = null;
     }
 
     // 初始化 Sentry (需要你注册后获取DSN)
@@ -24,13 +23,9 @@ export class ErrorMonitorService {
         }
     }
 
-    // 设置用户信息
     setUser(userId, email = null) {
         if (this.sentryEnabled && typeof Sentry !== 'undefined') {
-            Sentry.setUser({
-                id: userId,
-                email: email
-            });
+            Sentry.setUser({ id: userId, email: email });
         }
     }
 
@@ -53,8 +48,8 @@ export class ErrorMonitorService {
         }
     }
 
-    setSupabaseService(service) {
-        this.supabaseService = service;
+    setSupabaseService(_service) {
+        // 保留接口兼容性，暂不使用
     }
 
     // 全局错误处理

@@ -23,7 +23,6 @@ export class SupabaseService {
 
     async insertPost(post) {
         try {
-            console.log('Inserting post:', post);
             const response = await fetch(`${this.SUPABASE_URL}/rest/v1/posts`, {
                 method: 'POST',
                 headers: {
@@ -34,48 +33,15 @@ export class SupabaseService {
                 },
                 body: JSON.stringify(post)
             });
-            
-            console.log('Insert response status:', response.status);
-            const responseText = await response.text();
-            console.log('Insert response body:', responseText);
-            
             if (!response.ok) {
+                const responseText = await response.text();
                 throw new Error(`HTTP ${response.status}: ${responseText}`);
             }
-            
+            const responseText = await response.text();
             return responseText ? JSON.parse(responseText) : null;
         } catch(e) {
             console.error('Insert post error:', e);
             throw e;
-        }
-    }
-
-    async updateReaction(postId, reactions) {
-        try {
-            console.log('Updating reaction in database:', { postId, reactions });
-            
-            const response = await fetch(`${this.SUPABASE_URL}/rest/v1/posts?id=eq.${postId}`, {
-                method: 'PATCH',
-                headers: {
-                    'apikey': this.SUPABASE_KEY,
-                    'Authorization': `Bearer ${this.SUPABASE_KEY}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'return=representation'
-                },
-                body: JSON.stringify({ reactions })
-            });
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Failed to update reaction:', response.status, errorText);
-                return false;
-            }
-            
-            console.log('Reaction updated successfully');
-            return true;
-        } catch(e) {
-            console.error('Update reaction error:', e);
-            return false;
         }
     }
 
