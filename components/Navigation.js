@@ -16,7 +16,7 @@ export class Navigation {
                     </div>
                     <div class="flex gap-8 text-[11px] font-bold uppercase tracking-widest items-center">
                         <button id="nav-archives" class="hover:opacity-50">Archives</button>
-                        <button id="nav-write" class="border border-current px-5 py-2">Write</button>
+                        <button id="nav-write" class="border border-current px-5 py-2 rounded-full">Write</button>
                         <button id="nav-theme"><i id="theme-icon" class="fas fa-moon opacity-50"></i></button>
                     </div>
                 </div>
