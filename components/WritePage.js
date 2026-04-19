@@ -116,6 +116,12 @@ export class WritePage {
     }
 
     bindEvents() {
+        // 填充静态页面的 mood-selector 容器
+        const moodContainer = document.getElementById('mood-selector');
+        if (moodContainer && moodContainer.children.length === 0) {
+            moodContainer.innerHTML = this.renderMoodOptions();
+        }
+
         // 心情选择
         document.querySelectorAll('.mood-option').forEach(option => {
             option.addEventListener('click', () => {
