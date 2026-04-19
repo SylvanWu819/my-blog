@@ -41,8 +41,7 @@ export class App {
             (e) => this.handleImageUpload(e)
         );
         this.detailPage = new DetailPage(
-            () => this.navigate('home'),
-            (postId, emoji) => this.toggleReaction(postId, emoji)
+            () => this.navigate('home')
         );
         this.spacePoemOverlay = new SpacePoemOverlay();
         
@@ -51,6 +50,7 @@ export class App {
         this.currentSpace = '此间';
         this.currentPage = 'home';
         this.switchingSpace = false;
+        this.homeScrollY = 0; // 记住首页滚动位置
         
         // 生成用户ID用于追踪
         this.userId = this.getUserId();
@@ -179,34 +179,50 @@ export class App {
         const nextSection = document.getElementById(page);
         
         if (!nextSection) return;
-        
-        // 先隐藏当前页面
-        if (currentSection) {
-            currentSection.classList.add('hidden');
+
+        // 离开首页时记住滚动位置
+        if (this.currentPage === 'home') {
+            this.homeScrollY = window.scrollY;
         }
-        
-        // 使用 requestAnimationFrame 确保动画流畅
-        requestAnimationFrame(() => {
-            // 显示新页面
+
+        // 先淡出当前页面
+        if (currentSection) {
+            currentSection.classList.add('page-leaving');
+        }
+
+        setTimeout(() => {
+            if (currentSection) {
+                currentSection.classList.add('hidden');
+                currentSection.classList.remove('page-leaving');
+            }
+
+            // 先设为透明再显示，下一帧触发淡入
+            nextSection.style.opacity = '0';
+            nextSection.style.transform = 'translateY(8px)';
             nextSection.classList.remove('hidden');
-            
-            // 更新状态
-            this.currentPage = page;
-            
-            // 页面特定逻辑
-            if (page === 'write') {
-                this.writePage.setSpace(this.currentSpace);
-            }
-            
-            if (page === 'home') {
-                this.homePage.startPoemCarousel();
-            } else {
-                this.homePage.stopPoemCarousel();
-            }
-            
-            // 平滑滚动到顶部
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    nextSection.style.opacity = '';
+                    nextSection.style.transform = '';
+                    this.currentPage = page;
+
+                    if (page === 'write') {
+                        this.writePage.setSpace(this.currentSpace);
+                    }
+
+                    if (page === 'home') {
+                        this.homePage.startPoemCarousel();
+                        requestAnimationFrame(() => {
+                            window.scrollTo({ top: this.homeScrollY, behavior: 'instant' });
+                        });
+                    } else {
+                        this.homePage.stopPoemCarousel();
+                        window.scrollTo({ top: 0, behavior: 'instant' });
+                    }
+                });
+            });
+        }, 250);
     }
 
     async switchSpace(spaceName) {
@@ -253,38 +269,8 @@ export class App {
     async showDetail(postId) {
         const post = this.posts.find(p => p.id === postId);
         if (!post) return;
-        
-        const userReaction = this.reactionService.getUserReaction(postId);
         this.navigate('detail');
-        this.detailPage.updateContent(post, userReaction);
-    }
-
-    async toggleReaction(postId, emoji) {
-        const post = this.posts.find(p => p.id === postId);
-        if (!post) {
-            console.error('Post not found:', postId);
-            return;
-        }
-        
-        console.log('Toggling reaction:', { postId, emoji, currentReactions: post.reactions });
-        
-        try {
-            const newReactions = await this.reactionService.toggleReaction(post, emoji);
-            post.reactions = newReactions;
-            
-            console.log('New reactions:', newReactions);
-            
-            const userReaction = this.reactionService.getUserReaction(postId);
-            this.detailPage.updateContent(post, userReaction);
-        } catch(e) {
-            console.error('Toggle reaction error:', e);
-            this.errorMonitor.captureError(e, {
-                context: 'toggle_reaction',
-                postId,
-                emoji
-            });
-            alert('点赞失败，请稍后重试');
-        }
+        this.detailPage.updateContent(post);
     }
 
     async handleImageUpload(event) {
@@ -371,7 +357,9 @@ export class App {
                 }));
                 this.filterPostsBySpace();
             }
-            
+
+            // 成功提示
+            this.showToast('已发布 ✦');
             this.navigate('home');
             
         } catch(e) {
@@ -387,6 +375,17 @@ export class App {
             btn.disabled = false;
             btn.innerText = "PUBLISH";
         }
+    }
+    showToast(msg) {
+        const toast = document.createElement('div');
+        toast.className = 'libra-toast';
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('show'));
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 400);
+        }, 2000);
     }
 }
 

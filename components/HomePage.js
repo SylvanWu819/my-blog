@@ -101,7 +101,14 @@ export class HomePage {
         this.currentSpace = spaceName;
         const title = document.getElementById('space-title');
         if (title) {
-            title.textContent = `${spaceName}。`;
+            title.style.opacity = '0';
+            title.style.transform = 'translateY(6px)';
+            setTimeout(() => {
+                title.textContent = `${spaceName}。`;
+                title.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                title.style.opacity = '1';
+                title.style.transform = 'translateY(0)';
+            }, 200);
         }
     }
 

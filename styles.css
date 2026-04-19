@@ -113,6 +113,28 @@ body.dark::before {
     margin: 2rem 0;
 }
 
+/* Toast 提示 */
+.libra-toast {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%) translateY(12px);
+    background: var(--text);
+    color: var(--bg);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    padding: 10px 24px;
+    border-radius: 100px;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+    z-index: 99999;
+}
+.libra-toast.show {
+    opacity: 0.9;
+    transform: translateX(-50%) translateY(0);
+}
+
 /* 阅读进度条 */
 #read-progress-bar {
     position: fixed;
@@ -524,12 +546,12 @@ body.dark::before {
 
 /* 页面切换动画 */
 main > section {
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    transition: opacity 0.25s ease, transform 0.25s ease;
     will-change: opacity, transform;
 }
 main > section.hidden {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
     pointer-events: none;
     position: absolute;
     width: 100%;
@@ -538,6 +560,12 @@ main > section:not(.hidden) {
     opacity: 1;
     transform: translateY(0);
     position: relative;
+}
+main > section.page-leaving {
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
 /* 预加载优化 */
@@ -582,60 +610,3 @@ main {
     transition: opacity 0.3s ease;
 }
 
-/* 主题切换光束动画 */
-.theme-transition-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 9997;
-    pointer-events: none;
-    opacity: 0;
-    will-change: transform, opacity;
-    transform: translate3d(0, 0, 0);
-}
-
-/* 暗到亮：光波扩散（优化版） */
-.theme-transition-overlay.light-burst {
-    background: radial-gradient(circle at var(--burst-x, 50%) var(--burst-y, 50%), 
-        rgba(255, 255, 255, 0.95) 0%, 
-        rgba(255, 255, 255, 0.8) 15%,
-        rgba(255, 255, 255, 0) 60%);
-    animation: light-burst 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-@keyframes light-burst {
-    0% {
-        opacity: 0;
-        transform: translate3d(0, 0, 0) scale(0.3);
-    }
-    50% {
-        opacity: 1;
-    }
-    100% {
-        opacity: 0;
-        transform: translate3d(0, 0, 0) scale(2.5);
-    }
-}
-
-/* 亮到暗：整体渐暗（优化版） */
-.theme-transition-overlay.dark-fade {
-    background: radial-gradient(circle at 50% 50%, 
-        transparent 0%, 
-        rgba(0, 0, 0, 0.2) 30%,
-        rgba(0, 0, 0, 0.8) 100%);
-    animation: dark-fade 0.8s ease-out forwards;
-}
-
-@keyframes dark-fade {
-    0% {
-        opacity: 0;
-        transform: translate3d(0, 0, 0) scale(1.05);
-    }
-    50% {
-        opacity: 1;
-        transform: translate3d(0, 0, 0) scale(1);
-    }
-    100% {
-        opacity: 0;
-        transform: translate3d(0, 0, 0) scale(0.98);
-    }
-}

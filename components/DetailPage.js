@@ -1,30 +1,20 @@
 // 详情页面组件
 export class DetailPage {
-    constructor(onBack, onToggleReaction) {
+    constructor(onBack) {
         this.onBack = onBack;
-        this.onToggleReaction = onToggleReaction;
         this.currentPost = null;
     }
 
-    render(post, userReaction) {
+    formatDate(dateStr) {
+        if (!dateStr) return '未知日期';
+        const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+        const d = new Date(dateStr);
+        if (isNaN(d)) return dateStr;
+        return `${months[d.getMonth()]} ${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    render(post) {
         this.currentPost = post;
-        const reactions = post.reactions || {};
-        const availableReactions = ['❤️', '👍', '😊', '🔥', '💯', '👏'];
-        
-        const reactionsHtml = availableReactions.map(emoji => {
-            const count = reactions[emoji] || 0;
-            const isActive = userReaction === emoji;
-            return `
-                <div class="reaction-container">
-                    <span class="reaction-btn ${isActive ? 'active' : ''}" 
-                          data-emoji="${emoji}"
-                          data-post-id="${post.id}">
-                        ${emoji}
-                    </span>
-                    ${count > 0 ? `<span class="reaction-count">${count}</span>` : ''}
-                </div>
-            `;
-        }).join('');
 
         return `
             <section id="detail">
@@ -38,23 +28,20 @@ export class DetailPage {
                         ${post.mood ? `<span class="text-4xl">${post.mood}</span>` : ''}
                     </div>
                     <div class="text-[10px] opacity-30 tracking-widest uppercase pb-8 mb-8 border-b border-current" style="border-opacity: 0.1;">
-                        ${post.date || '未知日期'} ${post.author_name ? '· ' + post.author_name : ''}
+                        ${this.formatDate(post.date)} ${post.author_name ? '· ' + post.author_name : ''}
                     </div>
                     <div class="article-content">
                         ${marked.parse(post.content || '')}
-                    </div>
-                    <div class="flex gap-4 flex-wrap mt-16 pt-8 border-t border-current opacity-20">
-                        ${reactionsHtml}
                     </div>
                 </div>
             </section>
         `;
     }
 
-    updateContent(post, userReaction) {
+    updateContent(post) {
         const detailSection = document.getElementById('detail');
         if (detailSection) {
-            detailSection.innerHTML = this.render(post, userReaction).replace(/<section[^>]*>|<\/section>/g, '');
+            detailSection.innerHTML = this.render(post).replace(/<section[^>]*>|<\/section>/g, '');
             this.bindEvents();
         }
     }
@@ -73,13 +60,5 @@ export class DetailPage {
             bar.style.width = docHeight > 0 ? (scrollTop / docHeight * 100) + '%' : '0%';
         };
         window.addEventListener('scroll', onScroll, { passive: true });
-
-        document.querySelectorAll('.reaction-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const postId = parseInt(btn.dataset.postId);
-                const emoji = btn.dataset.emoji;
-                this.onToggleReaction(postId, emoji);
-            });
-        });
     }
 }
