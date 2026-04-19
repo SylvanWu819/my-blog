@@ -85,7 +85,7 @@ body.dark::before {
 }
 
 #detail .article-content blockquote {
-    border-left: 3px solid var(--border);
+    border-left: 3px solid var(--accent);
     padding-left: 1.5rem;
     margin: 1.5rem 0;
     opacity: 0.8;
@@ -111,6 +111,11 @@ body.dark::before {
     max-width: 100%;
     border-radius: 8px;
     margin: 2rem 0;
+    transition: filter 0.3s ease;
+}
+#detail .article-content img:hover {
+    filter: brightness(1.05);
+    cursor: zoom-in;
 }
 
 /* Toast 提示 */
@@ -422,11 +427,9 @@ body.dark::before {
 @keyframes breathe {
     0%, 100% { 
         transform: translateY(0px) scale(1);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
     }
     50% { 
         transform: translateY(-6px) scale(1.005);
-        box-shadow: 0 8px 16px rgba(0,0,0,0.08);
     }
 }
 
@@ -494,39 +497,6 @@ body.dark::before {
     filter: grayscale(0);
 }
 
-/* 点赞动画 */
-.reaction-container {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 24px;
-}
-.reaction-btn {
-    font-size: 24px;
-    cursor: pointer;
-    opacity: 0.2;
-    transition: all 0.3s ease;
-    user-select: none;
-}
-.reaction-btn:hover {
-    opacity: 0.6;
-    transform: scale(1.2);
-}
-.reaction-btn.active {
-    opacity: 1;
-    animation: heartbeat 0.6s ease;
-}
-@keyframes heartbeat {
-    0%, 100% { transform: scale(1); }
-    25% { transform: scale(1.3); }
-    50% { transform: scale(1.1); }
-    75% { transform: scale(1.25); }
-}
-.reaction-count {
-    font-size: 14px;
-    opacity: 0.5;
-}
-
 /* 首页图片预览 */
 .post-preview-image {
     width: 100%;
@@ -535,13 +505,20 @@ body.dark::before {
     border-radius: 12px;
     margin-bottom: 16px;
     background: var(--border);
-    transition: opacity 0.3s ease;
+    transition: opacity 0.3s ease, transform 0.4s ease;
 }
 .post-preview-image[loading="lazy"] {
     opacity: 0;
 }
 .post-preview-image.loaded {
     opacity: 1;
+}
+/* 卡片图片 hover 缩放，需要 overflow hidden 配合 */
+.post-card-inner {
+    overflow: hidden;
+}
+.post-card:hover .post-preview-image {
+    transform: scale(1.04);
 }
 
 /* 页面切换动画 */
