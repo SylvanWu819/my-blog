@@ -8,7 +8,6 @@ import { Loader } from './components/Loader.js';
 import { SpacePoemOverlay } from './components/SpacePoemOverlay.js';
 import { SupabaseService } from './services/SupabaseService.js';
 import { ThemeService } from './services/ThemeService.js';
-import { ReactionService } from './services/ReactionService.js';
 import { ErrorMonitorService } from './services/ErrorMonitorService.js';
 
 export class App {
@@ -23,11 +22,9 @@ export class App {
         // 初始化服务
         this.supabaseService = new SupabaseService();
         this.themeService = new ThemeService();
-        this.reactionService = new ReactionService(this.supabaseService);
         
         // 连接错误监控和 Supabase
         this.errorMonitor.setSupabaseService(this.supabaseService);
-        
         // 初始化组件
         this.loader = new Loader();
         this.navigation = new Navigation(
@@ -61,7 +58,7 @@ export class App {
     getUserId() {
         let userId = localStorage.getItem('libra_user_id');
         if (!userId) {
-            userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substring(2, 11);
             localStorage.setItem('libra_user_id', userId);
         }
         return userId;
@@ -118,59 +115,11 @@ export class App {
     }
 
     bindEvents() {
-        // 绑定加载器事件
         this.loader.bindEvents();
-        
-        // 绑定导航事件
         this.navigation.bindEvents();
-        
-        // 绑定空间导航事件
         this.spaceNav.bindEvents();
-        
-        // 绑定首页事件
         this.homePage.bindEvents();
-        
-        // 绑定写作页面事件
         this.writePage.bindEvents();
-        
-        // 渲染心情选择器
-        this.renderMoodSelector();
-    }
-
-    renderMoodSelector() {
-        const moods = [
-            '😊', '😢', '😌', '🤔', '😴',
-            '😄', '🥲', '😮', '😞', '🫠',
-            '🌙', '☁️', '🌧️', '🔥', '💫',
-            '🌈', '🍃', '🌊', '❄️', '🌸',
-            '😎', '🥹', '😤', '🫶', '💭',
-            '🎵', '📖', '✨', '🕯️', '🍵',
-            '😶‍🌫️', '🫀', '🌿', '🪐', '🦋',
-            "🌙","✨","🪐","📖","🕯️","🍃",
-            "☁️","🧊","🥀","💧",
-            "🫧","🌸","🦋","🌅","🌄",
-            "🍂","🐢","🎯","⛰️","🛤️",
-            "💫","🪴","🔥","🪶","🧘",
-            "🌧️","☀️","🧩","🪁","💨",
-            "🏞️","🪨","🕰️","🫀","🧸",
-            "🌾","⚪","🌫️","🥺","💭",
-            "🚶","🔅","🌌","🪞","🍄",
-            "🎐","🍁","🪷","🌊"
-        ];
-        
-        const container = document.getElementById('mood-selector');
-        if (container) {
-            container.innerHTML = moods.map(mood => 
-                `<span class="mood-option" data-mood="${mood}">${mood}</span>`
-            ).join('');
-            
-            // 绑定心情选择事件
-            container.querySelectorAll('.mood-option').forEach(option => {
-                option.addEventListener('click', () => {
-                    this.writePage.selectMood(option.dataset.mood);
-                });
-            });
-        }
     }
 
     navigateHome() {

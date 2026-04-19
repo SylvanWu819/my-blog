@@ -34,19 +34,11 @@ export class ErrorMonitorService {
         }
     }
 
-    // 记录错误
     captureError(error, context = {}) {
         console.error('Error captured:', error, context);
-        
-        // 发送到 Sentry
         if (this.sentryEnabled && typeof Sentry !== 'undefined') {
-            Sentry.captureException(error, {
-                extra: context
-            });
+            Sentry.captureException(error, { extra: context });
         }
-        
-        // 同时记录到 Supabase (备用方案)
-        this.logToSupabase(error, context);
     }
 
     // 记录消息
@@ -61,30 +53,6 @@ export class ErrorMonitorService {
         }
     }
 
-    // 记录到 Supabase (作为备用)
-    async logToSupabase(error, context = {}) {
-        if (!this.supabaseService) return;
-        
-        try {
-            const errorLog = {
-                error_message: error.message || String(error),
-                error_stack: error.stack || '',
-                context: JSON.stringify(context),
-                user_agent: navigator.userAgent,
-                url: window.location.href,
-                timestamp: new Date().toISOString()
-            };
-            
-            // 这里需要在 Supabase 创建 error_logs 表
-            // 暂时只在控制台输出
-            console.log('Error log:', errorLog);
-            
-        } catch(e) {
-            console.error('Failed to log error to Supabase:', e);
-        }
-    }
-
-    // 设置 Supabase 服务
     setSupabaseService(service) {
         this.supabaseService = service;
     }
