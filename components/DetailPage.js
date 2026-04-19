@@ -29,12 +29,14 @@ export class DetailPage {
         return `
             <section id="detail">
                 <div class="max-w-3xl mx-auto px-8">
-                    <button id="back-btn" class="text-[10px] opacity-40 uppercase tracking-widest mb-12 hover:opacity-100">← Back</button>
+                    <button id="back-btn" class="group flex items-center gap-2 text-[10px] opacity-40 uppercase tracking-widest mb-12 hover:opacity-100 transition-opacity">
+                        <span class="inline-block transition-transform group-hover:-translate-x-1">←</span> Back
+                    </button>
                     <div class="flex items-center gap-3 mb-4">
                         <h1 class="text-5xl font-bold serif">${post.title}</h1>
                         ${post.mood ? `<span class="text-4xl">${post.mood}</span>` : ''}
                     </div>
-                    <div class="text-[10px] opacity-30 tracking-widest mb-12 uppercase">
+                    <div class="text-[10px] opacity-30 tracking-widest uppercase pb-8 mb-8 border-b border-current" style="border-opacity: 0.1;">
                         ${post.date || '未知日期'} ${post.author_name ? '· ' + post.author_name : ''}
                     </div>
                     <div class="article-content">

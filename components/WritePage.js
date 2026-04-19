@@ -10,8 +10,12 @@ export class WritePage {
         return `
             <section id="write" class="hidden">
                 <div class="mb-10 flex flex-col gap-6">
-                    <input id="in-title" type="text" placeholder="TITLE" class="bg-transparent text-4xl font-bold serif outline-none border-none w-full">
-                    <input id="in-author" type="text" placeholder="Author Name" class="bg-transparent text-sm opacity-60 outline-none border-none w-full">
+                    <div class="write-field-wrap pb-2">
+                        <input id="in-title" type="text" placeholder="TITLE" class="bg-transparent text-4xl font-bold serif outline-none border-none w-full">
+                    </div>
+                    <div class="write-field-wrap pb-2">
+                        <input id="in-author" type="text" placeholder="Author Name" class="bg-transparent text-sm opacity-60 outline-none border-none w-full">
+                    </div>
                     <div>
                         <p class="text-xs opacity-40 mb-3 uppercase tracking-widest">Space · 发布至</p>
                         <select id="in-space" class="bg-transparent text-lg serif opacity-80 outline-none border border-current px-4 py-3 rounded cursor-pointer hover:opacity-100 transition-opacity w-full">
@@ -31,7 +35,9 @@ export class WritePage {
                         </div>
                     </div>
                 </div>
-                <textarea id="in-content" rows="12" placeholder="Start recording..." class="w-full text-lg bg-transparent outline-none resize-none leading-relaxed border-none"></textarea>
+                <div class="write-field-wrap pb-2">
+                    <textarea id="in-content" rows="12" placeholder="Start recording..." class="w-full text-lg bg-transparent outline-none resize-none leading-relaxed border-none"></textarea>
+                </div>
                 <div class="mt-6 flex items-center gap-4">
                     <input type="file" id="image-upload" accept="image/*" style="display:none">
                     <button id="add-image-btn" class="text-xs opacity-40 hover:opacity-100 transition-opacity flex items-center gap-2">
@@ -49,8 +55,12 @@ export class WritePage {
     renderMoodOptions() {
         const moods = [
             '😊', '😢', '😌', '🤔', '😴',
-            '😄', '🥲','😮', '😞',
-            '🫠', '🌙', '☁️', '🌧️'
+            '😄', '🥲', '😮', '😞', '🫠',
+            '🌙', '☁️', '🌧️', '🔥', '💫',
+            '🌈', '🍃', '🌊', '❄️', '🌸',
+            '😎', '🥹', '😤', '🫶', '💭',
+            '🎵', '📖', '✨', '🕯️', '🍵',
+            '😶‍🌫️', '🫀', '🌿', '🪐', '🦋'
         ];
         
         return moods.map(mood => 

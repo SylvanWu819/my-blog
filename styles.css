@@ -30,6 +30,23 @@ body {
     will-change: background;
 }
 
+/* 纸张纹理层 */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 300px 300px;
+}
+.dark body::before,
+body.dark::before {
+    opacity: 0.06;
+}
+
 .serif { font-family: 'Noto Serif SC', serif; }
 
 /* 详情页文章内容样式 */
@@ -96,19 +113,71 @@ body {
     margin: 2rem 0;
 }
 
-/* 左侧空间导航 */
+/* 卡片按压感 */
+.post-card:active .post-card-inner {
+    transform: scale(0.98);
+    box-shadow: 0 0 0 1px var(--border), 0 1px 2px rgba(0,0,0,0.05);
+    transition: all 0.1s ease;
+}
+
+/* 导航按钮下划线滑入 */
+#nav-archives {
+    position: relative;
+}
+#nav-archives::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: currentColor;
+    transition: width 0.3s ease;
+}
+#nav-archives:hover::after {
+    width: 100%;
+}
+#nav-archives:hover {
+    opacity: 1;
+}
+
+/* 写作页输入框 focus 底线动画 */
+.write-field-wrap {
+    position: relative;
+}
+.write-field-wrap::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--text);
+    opacity: 0.3;
+    transition: width 0.4s ease;
+}
+.write-field-wrap:focus-within::after {
+    width: 100%;
+}
+
+/* 空间导航毛玻璃 */
 #space-nav {
     position: fixed;
     left: -280px;
     top: 0;
     width: 280px;
     height: 100vh;
-    background: var(--bg);
+    background: rgba(250, 250, 248, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border-right: 1px solid var(--border);
     z-index: 100;
     transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     padding: 80px 0 40px 0;
     overflow-y: auto;
+}
+.dark #space-nav {
+    background: rgba(26, 26, 24, 0.85);
 }
 #space-nav.show {
     left: 0;
@@ -283,19 +352,23 @@ body {
 .post-card-inner {
     transition: all 0.4s ease;
     border: none;
+    background: rgba(255, 255, 255, 0.6);
     box-shadow: 0 0 0 1px var(--border), 0 2px 4px rgba(0,0,0,0.03);
     height: 100%;
     border-radius: 16px;
     animation: breathe 6s ease-in-out infinite;
 }
+.dark .post-card-inner {
+    background: rgba(255, 255, 255, 0.04);
+}
 .post-card:hover .post-card-inner {
-    background: rgba(0,0,0,0.02);
+    background: rgba(255, 255, 255, 0.85);
     transform: translateY(-4px);
     box-shadow: 0 0 0 1px var(--border), 0 12px 28px rgba(0,0,0,0.08);
     animation: none;
 }
 .dark .post-card:hover .post-card-inner {
-    background: rgba(255,255,255,0.03);
+    background: rgba(255,255,255,0.07);
     box-shadow: 0 0 0 1px var(--border), 0 12px 28px rgba(0,0,0,0.3);
 }
 
@@ -328,8 +401,19 @@ body {
 /* 心情选择器 */
 .mood-selector {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     margin: 16px 0;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    cursor: grab;
+}
+.mood-selector:active {
+    cursor: grabbing;
+}
+.mood-selector::-webkit-scrollbar {
+    display: none;
 }
 .mood-option {
     font-size: 28px;
@@ -337,6 +421,7 @@ body {
     opacity: 0.4;
     transition: all 0.3s ease;
     filter: grayscale(1);
+    flex-shrink: 0;
 }
 .mood-option:hover {
     opacity: 0.8;
