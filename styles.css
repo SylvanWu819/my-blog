@@ -190,7 +190,7 @@ body {
     pointer-events: all;
 }
 #space-poem-text {
-    font-size: 32px;
+    font-size: clamp(18px, 4vw, 32px);
     letter-spacing: 0.2em;
     opacity: 0;
     transform: translateY(20px);
@@ -278,11 +278,12 @@ body {
     -webkit-backdrop-filter: blur(15px); 
     border-bottom: 1px solid var(--border); 
 }
-.dark .glass { background: rgba(13,13,13,0.8); }
+.dark .glass { background: rgba(13,13,13,0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
 
 .post-card-inner {
     transition: all 0.4s ease;
-    border: 1px solid var(--border);
+    border: none;
+    box-shadow: 0 0 0 1px var(--border), 0 2px 4px rgba(0,0,0,0.03);
     height: 100%;
     border-radius: 16px;
     animation: breathe 6s ease-in-out infinite;
@@ -290,10 +291,12 @@ body {
 .post-card:hover .post-card-inner {
     background: rgba(0,0,0,0.02);
     transform: translateY(-4px);
+    box-shadow: 0 0 0 1px var(--border), 0 12px 28px rgba(0,0,0,0.08);
     animation: none;
 }
 .dark .post-card:hover .post-card-inner {
     background: rgba(255,255,255,0.03);
+    box-shadow: 0 0 0 1px var(--border), 0 12px 28px rgba(0,0,0,0.3);
 }
 
 @keyframes breathe {
@@ -382,7 +385,7 @@ body {
 /* 首页图片预览 */
 .post-preview-image {
     width: 100%;
-    height: 200px;
+    aspect-ratio: 16 / 9;
     object-fit: cover;
     border-radius: 12px;
     margin-bottom: 16px;
@@ -420,14 +423,17 @@ main {
     min-height: 100vh;
 }
 
-/* 卡片动画优化 - 添加硬件加速 */
+/* 卡片标题使用 LXGW WenKai */
+.post-card h3 {
+    font-family: 'LXGW WenKai', 'Noto Serif SC', serif;
+}
 .post-card-inner {
     will-change: transform;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
 }
 
-/* 空间导航优化 */
+/* 卡片动画优化 - 添加硬件加速 */
 #space-nav {
     will-change: left;
     backface-visibility: hidden;

@@ -17,7 +17,7 @@ export class HomePage {
         return `
             <section id="home">
                 <div class="mb-20">
-                    <h2 id="space-title" class="text-6xl font-light serif mb-4">${this.currentSpace}。</h2>
+                    <h2 id="space-title" class="text-4xl md:text-6xl font-light serif mb-4">${this.currentSpace}。</h2>
                     <p id="poem-display" class="text-gray-400 text-sm serif italic opacity-60">"${this.poems[0]}"</p>
                 </div>
                 <div id="list-container" class="grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -35,7 +35,7 @@ export class HomePage {
         return this.posts.map((p, index) => {
             const imageMatch = (p.content || '').match(/!\[.*?\]\((.*?)\)/);
             const imageUrl = imageMatch ? imageMatch[1] : null;
-            const animationDelay = (index * 0.5) % 6;
+            const animationDelay = index * 0.8;
             
             return `
                 <div class="post-card cursor-pointer" data-post-id="${p.id}">
@@ -46,7 +46,7 @@ export class HomePage {
                             ${p.mood ? `<span class="text-lg">${p.mood}</span>` : ''}
                         </div>
                         <h3 class="text-xl font-bold serif mb-3">${p.title}</h3>
-                        <p class="text-gray-400 text-xs line-clamp-3 leading-relaxed serif italic opacity-80">${(p.content || '').replace(/!\[.*?\]\(.*?\)/g, '').replace(/\n/g, ' ')}</p>
+                        <p class="text-gray-400 text-sm line-clamp-3 leading-relaxed serif italic opacity-80">${(p.content || '').replace(/!\[.*?\]\(.*?\)/g, '').replace(/\n/g, ' ')}</p>
                     </div>
                 </div>
             `;
