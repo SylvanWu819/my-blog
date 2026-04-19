@@ -33,18 +33,25 @@ export class SpaceNav {
     bindEvents() {
         const trigger = document.querySelector('.space-trigger');
         const nav = document.getElementById('space-nav');
-        
-        trigger?.addEventListener('mouseenter', () => {
-            nav.classList.add('show');
-        });
-        
-        nav?.addEventListener('mouseleave', () => {
-            nav.classList.remove('show');
+
+        // 桌面端 hover
+        trigger?.addEventListener('mouseenter', () => nav.classList.add('show'));
+        nav?.addEventListener('mouseleave', () => nav.classList.remove('show'));
+
+        // 移动端：点击 trigger 区域切换显示
+        trigger?.addEventListener('click', () => nav.classList.toggle('show'));
+
+        // 点击导航外部关闭
+        document.addEventListener('click', (e) => {
+            if (!nav.contains(e.target) && !trigger.contains(e.target)) {
+                nav.classList.remove('show');
+            }
         });
 
         document.querySelectorAll('.space-item').forEach(item => {
             item.addEventListener('click', () => {
                 const space = item.dataset.space;
+                nav.classList.remove('show');
                 this.onSwitchSpace(space);
             });
         });

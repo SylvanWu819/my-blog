@@ -24,8 +24,8 @@ export class DetailPage {
                         <span class="inline-block transition-transform group-hover:-translate-x-1">←</span> Back
                     </button>
                     <div class="flex items-center gap-3 mb-4">
-                        <h1 class="text-5xl font-bold serif">${post.title}</h1>
-                        ${post.mood ? `<span class="text-4xl">${post.mood}</span>` : ''}
+                        <h1 class="text-3xl md:text-5xl font-bold serif">${post.title}</h1>
+                        ${post.mood ? `<span class="text-3xl">${post.mood}</span>` : ''}
                     </div>
                     <div class="text-[10px] opacity-30 tracking-widest uppercase pb-8 mb-8 border-b border-current" style="border-opacity: 0.1;">
                         ${this.formatDate(post.date)} ${post.author_name ? '· ' + post.author_name : ''}

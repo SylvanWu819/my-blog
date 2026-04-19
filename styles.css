@@ -243,6 +243,11 @@ body.dark::before {
     z-index: 99;
     cursor: pointer;
 }
+@media (max-width: 768px) {
+    .space-trigger {
+        width: 32px;
+    }
+}
 .space-trigger:hover + #space-nav,
 #space-nav:hover {
     left: 0;
@@ -574,12 +579,23 @@ main {
 
 /* 瀑布流布局 */
 .masonry-grid {
-    columns: 2;
-    column-gap: 2.5rem;
+    columns: 1;
+    column-gap: 2rem;
+}
+@media (min-width: 768px) {
+    .masonry-grid {
+        columns: 2;
+        column-gap: 2.5rem;
+    }
 }
 .post-card {
     break-inside: avoid;
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
+}
+@media (min-width: 768px) {
+    .post-card {
+        margin-bottom: 2.5rem;
+    }
 }
 
 /* 列表容器淡入效果 */
