@@ -20,7 +20,7 @@ export class HomePage {
                     <h2 id="space-title" class="text-4xl md:text-6xl font-light serif mb-4">${this.currentSpace}。</h2>
                     <p id="poem-display" class="text-gray-400 text-sm serif italic opacity-60">"${this.poems[0]}"</p>
                 </div>
-                <div id="list-container" class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div id="list-container" class="masonry-grid">
                     ${this.renderPostList()}
                 </div>
             </section>

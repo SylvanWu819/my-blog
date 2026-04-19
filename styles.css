@@ -542,6 +542,16 @@ main {
     will-change: opacity;
 }
 
+/* 瀑布流布局 */
+.masonry-grid {
+    columns: 2;
+    column-gap: 2.5rem;
+}
+.post-card {
+    break-inside: avoid;
+    margin-bottom: 2.5rem;
+}
+
 /* 列表容器淡入效果 */
 #list-container {
     transition: opacity 0.3s ease;
