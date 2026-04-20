@@ -170,14 +170,8 @@ export class WritePage {
         }, 2000);
     }
 
-    bindEvents() {
-        // 填充 mood-selector 容器
-        const moodContainer = document.getElementById('mood-selector');
-        if (moodContainer && moodContainer.children.length === 0) {
-            moodContainer.innerHTML = this.renderMoodOptions();
-        }
-
-        // 心情选择
+    bindMoodEvents() {
+        // 绑定心情选择事件
         document.querySelectorAll('.mood-option').forEach(option => {
             this.eventManager.on(option, 'click', () => {
                 this.selectMood(option.dataset.mood);
@@ -189,6 +183,17 @@ export class WritePage {
                 }
             });
         });
+    }
+
+    bindEvents() {
+        // 填充 mood-selector 容器
+        const moodContainer = document.getElementById('mood-selector');
+        if (moodContainer && moodContainer.children.length === 0) {
+            moodContainer.innerHTML = this.renderMoodOptions();
+        }
+
+        // 绑定心情选择事件
+        this.bindMoodEvents();
 
         // 发布按钮
         const pubBtn = document.getElementById('pub-btn');
