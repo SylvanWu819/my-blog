@@ -446,6 +446,7 @@ button:disabled {
     transition: left var(--duration-slow) var(--ease-in-out);
     padding: 80px 0 40px 0;
     overflow-y: auto;
+    touch-action: pan-y;
 }
 
 /* 亮色模式侧边栏增强 */
