@@ -9,6 +9,7 @@ import { SpacePoemOverlay } from './components/SpacePoemOverlay.js';
 import { SupabaseService } from './services/SupabaseService.js';
 import { ThemeService } from './services/ThemeService.js';
 import { ErrorMonitorService } from './services/ErrorMonitorService.js';
+import { TimerManager } from './services/Utils.js';
 
 export class App {
     constructor() {
@@ -22,6 +23,7 @@ export class App {
         // 初始化服务
         this.supabaseService = new SupabaseService();
         this.themeService = new ThemeService();
+        this.timerManager = new TimerManager();
         
         // 连接错误监控和 Supabase
         this.errorMonitor.setSupabaseService(this.supabaseService);
@@ -67,7 +69,11 @@ export class App {
     async init() {
         this.bindEvents();
         this.themeService.loadTheme();
-        setTimeout(() => this.loader.dismiss("Timeout Entry"), 8000);
+        
+        // 缩短超时时间到 5 秒
+        const timeoutId = this.timerManager.setTimeout(() => {
+            this.loader.dismiss("Timeout Entry");
+        }, 5000);
         
         try {
             // 加载数据
@@ -89,7 +95,7 @@ export class App {
             this.loader.dismiss("Cloud Synced");
             
             // 启动诗句轮播
-            setTimeout(() => {
+            this.timerManager.setTimeout(() => {
                 this.homePage.startPoemCarousel();
             }, 2000);
             
@@ -134,12 +140,21 @@ export class App {
             this.homeScrollY = window.scrollY;
         }
 
+        // 清理当前页面的资源
+        if (this.currentPage === 'home') {
+            this.homePage.destroy();
+        } else if (this.currentPage === 'detail') {
+            this.detailPage.destroy();
+        } else if (this.currentPage === 'write') {
+            this.writePage.destroy();
+        }
+
         // 先淡出当前页面
         if (currentSection) {
             currentSection.classList.add('page-leaving');
         }
 
-        setTimeout(() => {
+        this.timerManager.setTimeout(() => {
             if (currentSection) {
                 currentSection.classList.add('hidden');
                 currentSection.classList.remove('page-leaving');
@@ -232,6 +247,7 @@ export class App {
         
         const statusEl = document.getElementById('upload-status');
         statusEl.textContent = 'Uploading...';
+        statusEl.style.opacity = '1';
         
         try {
             const imageUrl = await this.supabaseService.uploadImage(file);
@@ -247,8 +263,9 @@ export class App {
             textarea.selectionStart = textarea.selectionEnd = cursorPos + imageMarkdown.length;
             
             statusEl.textContent = 'Image uploaded!';
-            setTimeout(() => {
+            this.timerManager.setTimeout(() => {
                 statusEl.textContent = '';
+                statusEl.style.opacity = '0';
             }, 3000);
             
             event.target.value = '';
@@ -260,8 +277,9 @@ export class App {
                 fileSize: file.size,
                 fileType: file.type
             });
-            statusEl.textContent = 'Upload failed';
-            alert('图片上传失败: ' + e.message);
+            statusEl.textContent = 'Upload failed: ' + e.message;
+            statusEl.style.color = 'var(--text)';
+            statusEl.style.opacity = '0.6';
         }
     }
 
@@ -269,7 +287,7 @@ export class App {
         const formData = this.writePage.getFormData();
         
         if (!formData.title || !formData.content) {
-            alert('请填写标题和内容');
+            this.showToast('请填写标题和内容 ✗');
             return;
         }
         
@@ -318,7 +336,7 @@ export class App {
                 space: formData.space,
                 contentLength: formData.content?.length
             });
-            alert('发布失败: ' + e.message);
+            this.showToast('发布失败: ' + e.message);
         } finally {
             btn.disabled = false;
             btn.innerText = "PUBLISH";

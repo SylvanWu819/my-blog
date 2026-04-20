@@ -1,4 +1,6 @@
 // 首页组件
+import { Utils, EventManager, TimerManager } from '../services/Utils.js';
+
 export class HomePage {
     constructor(onShowDetail) {
         this.onShowDetail = onShowDetail;
@@ -11,6 +13,9 @@ export class HomePage {
             '空山不见人', '但闻人语响'
         ];
         this.poemInterval = null;
+        this.eventManager = new EventManager();
+        this.timerManager = new TimerManager();
+        this.imageLoadHandlers = new Map(); // 追踪图片加载处理器
     }
 
     render() {
@@ -28,11 +33,7 @@ export class HomePage {
     }
 
     formatDate(dateStr) {
-        if (!dateStr) return '未知日期';
-        const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-        const d = new Date(dateStr);
-        if (isNaN(d)) return dateStr;
-        return `${months[d.getMonth()]} ${String(d.getDate()).padStart(2, '0')}`;
+        return Utils.formatDate(dateStr);
     }
 
     renderPostList() {
@@ -41,20 +42,23 @@ export class HomePage {
         }
 
         return this.posts.map((p, index) => {
-            const imageMatch = (p.content || '').match(/!\[.*?\]\((.*?)\)/);
-            const imageUrl = imageMatch ? imageMatch[1] : null;
-            const animationDelay = index * 0.8;
+            const imageUrl = Utils.extractImageUrl(p.content);
+            const animationDelay = index * 0.08; // 减少延迟，更快显示
+            const contentPreview = (p.content || '')
+                .replace(/!\[.*?\]\(.*?\)/g, '')
+                .replace(/\n/g, ' ')
+                .substring(0, 150); // 限制长度
             
             return `
-                <div class="post-card cursor-pointer" data-post-id="${p.id}">
+                <div class="post-card cursor-pointer" data-post-id="${p.id}" role="article" tabindex="0" aria-label="文章: ${p.title}">
                     <div class="post-card-inner p-8" style="animation-delay: ${animationDelay}s">
-                        ${imageUrl ? `<img src="${imageUrl}" alt="${p.title}" class="post-preview-image" loading="lazy" onload="this.classList.add('loaded')" onerror="this.style.display='none'">` : ''}
+                        ${imageUrl ? `<img src="${imageUrl}" alt="${p.title}" class="post-preview-image" loading="lazy" decoding="async" data-src="${imageUrl}">` : ''}
                         <div class="flex items-center gap-2 mb-4">
                             <div class="text-[9px] opacity-30 tracking-widest uppercase">${this.formatDate(p.date)}</div>
-                            ${p.mood ? `<span class="text-lg">${p.mood}</span>` : ''}
+                            ${p.mood ? `<span class="text-lg" aria-label="心情: ${p.mood}">${p.mood}</span>` : ''}
                         </div>
                         <h3 class="text-xl font-bold serif mb-3">${p.title}</h3>
-                        <p class="text-gray-400 text-sm line-clamp-3 leading-relaxed serif italic opacity-80">${(p.content || '').replace(/!\[.*?\]\(.*?\)/g, '').replace(/\n/g, ' ')}</p>
+                        <p class="text-gray-400 text-sm line-clamp-3 leading-relaxed serif italic opacity-80">${contentPreview}</p>
                     </div>
                 </div>
             `;
@@ -66,18 +70,14 @@ export class HomePage {
         const container = document.getElementById('list-container');
         if (!container) return;
         
-        // 如果没有文章,立即显示空状态
         if (posts.length === 0) {
             container.innerHTML = '<p class="text-gray-400 text-sm opacity-60">暂无内容</p>';
             return;
         }
         
-        // 先清空容器,避免旧内容闪烁
         container.style.opacity = '0';
         
-        // 使用 requestAnimationFrame 优化渲染
         requestAnimationFrame(() => {
-            // 使用 DocumentFragment 批量更新 DOM
             const fragment = document.createDocumentFragment();
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = this.renderPostList();
@@ -89,11 +89,49 @@ export class HomePage {
             container.innerHTML = '';
             container.appendChild(fragment);
             this.bindPostClickEvents();
+            this.setupImageLoading();
             
-            // 内容加载完成后淡入
             requestAnimationFrame(() => {
                 container.style.opacity = '1';
             });
+        });
+    }
+
+    setupImageLoading() {
+        // 使用 Intersection Observer 优化图片加载
+        if (!('IntersectionObserver' in window)) {
+            this.loadAllImages();
+            return;
+        }
+
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    const src = img.dataset.src;
+                    if (src) {
+                        img.src = src;
+                        img.addEventListener('load', () => img.classList.add('loaded'));
+                        img.addEventListener('error', () => img.style.display = 'none');
+                        observer.unobserve(img);
+                    }
+                }
+            });
+        }, { rootMargin: '50px' });
+
+        document.querySelectorAll('.post-preview-image').forEach(img => {
+            imageObserver.observe(img);
+        });
+    }
+
+    loadAllImages() {
+        document.querySelectorAll('.post-preview-image').forEach(img => {
+            const src = img.dataset.src;
+            if (src) {
+                img.src = src;
+                img.addEventListener('load', () => img.classList.add('loaded'));
+                img.addEventListener('error', () => img.style.display = 'none');
+            }
         });
     }
 
@@ -117,12 +155,12 @@ export class HomePage {
         if (!display) return;
         
         let idx = 0;
-        this.poemInterval = setInterval(() => {
+        this.poemInterval = this.timerManager.setInterval(() => {
             display.classList.add('poem-fade');
-            setTimeout(() => {
+            this.timerManager.setTimeout(() => {
                 idx = (idx + 1) % this.poems.length;
                 display.innerText = `"${this.poems[idx]}"`;
-                setTimeout(() => {
+                this.timerManager.setTimeout(() => {
                     display.classList.remove('poem-fade');
                 }, 50);
             }, 1000);
@@ -131,21 +169,32 @@ export class HomePage {
 
     stopPoemCarousel() {
         if (this.poemInterval) {
-            clearInterval(this.poemInterval);
+            this.timerManager.clear(this.poemInterval);
             this.poemInterval = null;
         }
     }
 
     bindPostClickEvents() {
+        // 清理旧的事件监听器
         document.querySelectorAll('.post-card').forEach(card => {
-            card.addEventListener('click', () => {
+            const handler = (e) => {
+                if (e.key && e.key !== 'Enter' && e.key !== ' ') return;
                 const postId = parseInt(card.dataset.postId);
                 this.onShowDetail(postId);
-            });
+            };
+            
+            this.eventManager.on(card, 'click', handler);
+            this.eventManager.on(card, 'keydown', handler);
         });
     }
 
     bindEvents() {
         this.bindPostClickEvents();
+    }
+
+    destroy() {
+        this.stopPoemCarousel();
+        this.eventManager.clear();
+        this.timerManager.clearAll();
     }
 }

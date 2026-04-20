@@ -1,9 +1,15 @@
 // 写作页面组件
+import { Utils, EventManager, TimerManager } from '../services/Utils.js';
+
 export class WritePage {
     constructor(onPublish, onImageUpload) {
         this.onPublish = onPublish;
         this.onImageUpload = onImageUpload;
         this.selectedMood = null;
+        this.eventManager = new EventManager();
+        this.timerManager = new TimerManager();
+        this.autoSaveInterval = null;
+        this.lastSavedState = null;
     }
 
     render() {
@@ -74,8 +80,13 @@ export class WritePage {
         this.selectedMood = mood;
         document.querySelectorAll('.mood-option').forEach(el => {
             el.classList.remove('selected');
+            el.setAttribute('aria-pressed', 'false');
         });
-        document.querySelector(`[data-mood="${mood}"]`)?.classList.add('selected');
+        const selected = document.querySelector(`[data-mood="${mood}"]`);
+        if (selected) {
+            selected.classList.add('selected');
+            selected.setAttribute('aria-pressed', 'true');
+        }
     }
 
     getFormData() {
@@ -94,7 +105,12 @@ export class WritePage {
         document.getElementById('in-author').value = '';
         document.getElementById('in-space').value = '此间';
         this.selectedMood = null;
-        document.querySelectorAll('.mood-option').forEach(el => el.classList.remove('selected'));
+        document.querySelectorAll('.mood-option').forEach(el => {
+            el.classList.remove('selected');
+            el.setAttribute('aria-pressed', 'false');
+        });
+        this.lastSavedState = null;
+        localStorage.removeItem('libra_draft');
     }
 
     setSpace(spaceName) {
@@ -104,8 +120,58 @@ export class WritePage {
         }
     }
 
+    // 自动保存草稿
+    saveDraft() {
+        const formData = this.getFormData();
+        const currentState = JSON.stringify(formData);
+        
+        if (currentState === this.lastSavedState) return;
+        
+        try {
+            localStorage.setItem('libra_draft', currentState);
+            this.lastSavedState = currentState;
+            this.showAutoSaveIndicator();
+        } catch (e) {
+            console.warn('Failed to save draft:', e);
+        }
+    }
+
+    // 恢复草稿
+    restoreDraft() {
+        try {
+            const draft = localStorage.getItem('libra_draft');
+            if (!draft) return false;
+            
+            const data = JSON.parse(draft);
+            document.getElementById('in-title').value = data.title || '';
+            document.getElementById('in-content').value = data.content || '';
+            document.getElementById('in-author').value = data.author || '';
+            document.getElementById('in-space').value = data.space || '此间';
+            
+            if (data.mood) {
+                this.selectMood(data.mood);
+            }
+            
+            this.lastSavedState = draft;
+            return true;
+        } catch (e) {
+            console.warn('Failed to restore draft:', e);
+            return false;
+        }
+    }
+
+    showAutoSaveIndicator() {
+        const indicator = document.getElementById('auto-save-indicator');
+        if (!indicator) return;
+        
+        indicator.style.opacity = '1';
+        this.timerManager.setTimeout(() => {
+            indicator.style.opacity = '0';
+        }, 2000);
+    }
+
     bindEvents() {
-        // 填充静态页面的 mood-selector 容器
+        // 填充 mood-selector 容器
         const moodContainer = document.getElementById('mood-selector');
         if (moodContainer && moodContainer.children.length === 0) {
             moodContainer.innerHTML = this.renderMoodOptions();
@@ -113,30 +179,63 @@ export class WritePage {
 
         // 心情选择
         document.querySelectorAll('.mood-option').forEach(option => {
-            option.addEventListener('click', () => {
+            this.eventManager.on(option, 'click', () => {
                 this.selectMood(option.dataset.mood);
+            });
+            this.eventManager.on(option, 'keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.selectMood(option.dataset.mood);
+                }
             });
         });
 
         // 发布按钮
-        document.getElementById('pub-btn')?.addEventListener('click', () => {
-            this.onPublish();
-        });
+        const pubBtn = document.getElementById('pub-btn');
+        if (pubBtn) {
+            this.eventManager.on(pubBtn, 'click', () => this.onPublish());
+        }
 
         // 图片上传
-        document.getElementById('add-image-btn')?.addEventListener('click', () => {
-            document.getElementById('image-upload')?.click();
-        });
+        const addImageBtn = document.getElementById('add-image-btn');
+        if (addImageBtn) {
+            this.eventManager.on(addImageBtn, 'click', () => {
+                document.getElementById('image-upload')?.click();
+            });
+        }
 
-        document.getElementById('image-upload')?.addEventListener('change', (e) => {
-            this.onImageUpload(e);
-        });
+        const imageUpload = document.getElementById('image-upload');
+        if (imageUpload) {
+            this.eventManager.on(imageUpload, 'change', (e) => {
+                this.onImageUpload(e);
+            });
+        }
 
         // 字数统计
-        document.getElementById('in-content')?.addEventListener('input', (e) => {
-            const len = e.target.value.replace(/\s/g, '').length;
-            const el = document.getElementById('word-count');
-            if (el) el.textContent = `${len} 字`;
-        });
+        const contentInput = document.getElementById('in-content');
+        if (contentInput) {
+            this.eventManager.on(contentInput, 'input', (e) => {
+                const len = e.target.value.replace(/\s/g, '').length;
+                const el = document.getElementById('word-count');
+                if (el) el.textContent = `${len} 字`;
+            });
+        }
+
+        // 自动保存草稿
+        const autoSaveHandler = () => this.saveDraft();
+        document.getElementById('in-title')?.addEventListener('input', autoSaveHandler);
+        document.getElementById('in-content')?.addEventListener('input', autoSaveHandler);
+        document.getElementById('in-author')?.addEventListener('input', autoSaveHandler);
+        document.getElementById('in-space')?.addEventListener('change', autoSaveHandler);
+
+        // 恢复草稿
+        if (this.restoreDraft()) {
+            this.showAutoSaveIndicator();
+        }
+    }
+
+    destroy() {
+        this.eventManager.clear();
+        this.timerManager.clearAll();
     }
 }
