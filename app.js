@@ -173,6 +173,7 @@ export class App {
 
                     if (page === 'write') {
                         this.writePage.setSpace(this.currentSpace);
+                        this.writePage.bindEvents();
                     }
 
                     if (page === 'home') {
