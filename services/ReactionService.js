@@ -2,14 +2,15 @@
 export class ReactionService {
     constructor(supabaseService) {
         this.supabaseService = supabaseService;
+        // 统一使用 libra_user_id，与 App 保持一致
         this.userId = this.getUserId();
     }
 
     getUserId() {
-        let userId = localStorage.getItem('userId');
+        let userId = localStorage.getItem('libra_user_id');
         if (!userId) {
-            userId = 'user_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('userId', userId);
+            userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substring(2, 11);
+            localStorage.setItem('libra_user_id', userId);
         }
         return userId;
     }
@@ -23,7 +24,7 @@ export class ReactionService {
         const reactionKey = `reaction_${post.id}_${this.userId}`;
         const hasReacted = localStorage.getItem(reactionKey) === emoji;
         
-        const reactions = post.reactions || {};
+        const reactions = { ...(post.reactions || {}) };
         
         if (hasReacted) {
             // 取消点赞
@@ -42,7 +43,14 @@ export class ReactionService {
             reactions[emoji] = (reactions[emoji] || 0) + 1;
         }
         
-        await this.supabaseService.updateReaction(post.id, reactions);
+        // 尝试同步到服务器
+        try {
+            await this.supabaseService.updateReaction(post.id, reactions);
+        } catch (e) {
+            console.warn('Failed to sync reaction to server:', e);
+            // 本地状态已更新，不影响用户体验
+        }
+        
         return reactions;
     }
 }

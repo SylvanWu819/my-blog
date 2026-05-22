@@ -2,8 +2,9 @@
 import { Utils, EventManager, TimerManager } from '../services/Utils.js';
 
 export class HomePage {
-    constructor(onShowDetail) {
+    constructor(onShowDetail, onLoadMore) {
         this.onShowDetail = onShowDetail;
+        this.onLoadMore = onLoadMore;
         this.posts = [];
         this.currentSpace = '此间';
         this.poems = [
@@ -15,7 +16,6 @@ export class HomePage {
         this.poemInterval = null;
         this.eventManager = new EventManager();
         this.timerManager = new TimerManager();
-        this.imageLoadHandlers = new Map(); // 追踪图片加载处理器
     }
 
     render() {
@@ -38,42 +38,42 @@ export class HomePage {
 
     renderPostList() {
         if (this.posts.length === 0) {
-            return '<p class="text-gray-400 text-sm opacity-60">暂无内容</p>';
+            return `
+                <div class="empty-state">
+                    <p class="text-gray-400 text-sm opacity-60 mb-4">这里还没有内容</p>
+                    <p class="text-gray-400 text-xs opacity-40">点击右上角 Write 开始记录你的第一篇文章</p>
+                </div>
+            `;
         }
 
         return this.posts.map((p, index) => {
             const imageUrl = Utils.extractImageUrl(p.content);
-            const animationDelay = index * 0.08; // 减少延迟，更快显示
+            const animationDelay = index * 0.08;
             const contentPreview = (p.content || '')
                 .replace(/!\[.*?\]\(.*?\)/g, '')
                 .replace(/\n/g, ' ')
-                .substring(0, 150); // 限制长度
+                .substring(0, 150);
             
             return `
-                <div class="post-card cursor-pointer" data-post-id="${p.id}" role="article" tabindex="0" aria-label="文章: ${p.title}">
+                <div class="post-card cursor-pointer" data-post-id="${p.id}" role="article" tabindex="0" aria-label="文章: ${Utils.escapeHtml(p.title)}">
                     <div class="post-card-inner p-8" style="animation-delay: ${animationDelay}s">
-                        ${imageUrl ? `<img src="${imageUrl}" alt="${p.title}" class="post-preview-image" loading="lazy" decoding="async" data-src="${imageUrl}">` : ''}
+                        ${imageUrl ? `<img src="${imageUrl}" alt="${Utils.escapeHtml(p.title)}" class="post-preview-image" loading="lazy" decoding="async" data-src="${imageUrl}">` : ''}
                         <div class="flex items-center gap-2 mb-4">
                             <div class="text-[9px] opacity-30 tracking-widest uppercase">${this.formatDate(p.date)}</div>
                             ${p.mood ? `<span class="text-lg" aria-label="心情: ${p.mood}">${p.mood}</span>` : ''}
                         </div>
-                        <h3 class="text-xl font-bold serif mb-3">${p.title}</h3>
-                        <p class="text-gray-400 text-sm line-clamp-3 leading-relaxed serif italic opacity-80">${contentPreview}</p>
+                        <h3 class="text-xl font-bold serif mb-3">${Utils.escapeHtml(p.title)}</h3>
+                        <p class="text-gray-400 text-sm line-clamp-3 leading-relaxed serif italic opacity-80">${Utils.escapeHtml(contentPreview)}</p>
                     </div>
                 </div>
             `;
         }).join('');
     }
 
-    updatePosts(posts) {
+    updatePosts(posts, hasMore = false) {
         this.posts = posts;
         const container = document.getElementById('list-container');
         if (!container) return;
-        
-        if (posts.length === 0) {
-            container.innerHTML = '<p class="text-gray-400 text-sm opacity-60">暂无内容</p>';
-            return;
-        }
         
         container.style.opacity = '0';
         
@@ -95,10 +95,15 @@ export class HomePage {
                 container.style.opacity = '1';
             });
         });
+
+        // 更新 Load More 按钮
+        const loadMoreWrap = document.getElementById('load-more-wrap');
+        if (loadMoreWrap) {
+            loadMoreWrap.classList.toggle('hidden', !hasMore);
+        }
     }
 
     setupImageLoading() {
-        // 使用 Intersection Observer 优化图片加载
         if (!('IntersectionObserver' in window)) {
             this.loadAllImages();
             return;
@@ -175,7 +180,6 @@ export class HomePage {
     }
 
     bindPostClickEvents() {
-        // 清理旧的事件监听器
         document.querySelectorAll('.post-card').forEach(card => {
             const handler = (e) => {
                 if (e.key && e.key !== 'Enter' && e.key !== ' ') return;
@@ -190,6 +194,14 @@ export class HomePage {
 
     bindEvents() {
         this.bindPostClickEvents();
+
+        // Load More 按钮
+        const loadMoreBtn = document.getElementById('load-more-btn');
+        if (loadMoreBtn) {
+            this.eventManager.on(loadMoreBtn, 'click', () => {
+                if (this.onLoadMore) this.onLoadMore();
+            });
+        }
     }
 
     destroy() {

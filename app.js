@@ -9,6 +9,7 @@ import { SpacePoemOverlay } from './components/SpacePoemOverlay.js';
 import { SupabaseService } from './services/SupabaseService.js';
 import { ThemeService } from './services/ThemeService.js';
 import { ErrorMonitorService } from './services/ErrorMonitorService.js';
+import { RouterService } from './services/RouterService.js';
 import { TimerManager } from './services/Utils.js';
 
 export class App {
@@ -27,6 +28,10 @@ export class App {
         
         // 连接错误监控和 Supabase
         this.errorMonitor.setSupabaseService(this.supabaseService);
+
+        // 初始化路由
+        this.router = new RouterService((route) => this.handleRouteChange(route));
+
         // 初始化组件
         this.loader = new Loader();
         this.navigation = new Navigation(
@@ -35,13 +40,17 @@ export class App {
             () => this.navigateHome()
         );
         this.spaceNav = new SpaceNav((space) => this.switchSpace(space));
-        this.homePage = new HomePage((postId) => this.showDetail(postId));
+        this.homePage = new HomePage(
+            (postId) => this.showDetail(postId),
+            () => this.loadMorePosts()
+        );
         this.writePage = new WritePage(
             () => this.publish(),
             (e) => this.handleImageUpload(e)
         );
         this.detailPage = new DetailPage(
-            () => this.navigate('home')
+            () => this.navigate('home'),
+            this.supabaseService
         );
         this.spacePoemOverlay = new SpacePoemOverlay();
         
@@ -50,7 +59,21 @@ export class App {
         this.currentSpace = '此间';
         this.currentPage = 'home';
         this.switchingSpace = false;
-        this.homeScrollY = 0; // 记住首页滚动位置
+        this.homeScrollY = 0;
+        
+        // 分页
+        this.pageSize = 12;
+        this.currentPageNum = 1;
+        this.hasMore = false;
+
+        // 搜索
+        this.searchQuery = '';
+        
+        // 离线状态
+        this.isOffline = !navigator.onLine;
+        
+        // 发布密码 (简单 token 验证)
+        this.publishToken = 'libra2024';
         
         // 生成用户ID用于追踪
         this.userId = this.getUserId();
@@ -69,6 +92,7 @@ export class App {
     async init() {
         this.bindEvents();
         this.themeService.loadTheme();
+        this.setupOfflineDetection();
         
         // 缩短超时时间到 5 秒
         const timeoutId = this.timerManager.setTimeout(() => {
@@ -81,7 +105,7 @@ export class App {
             
             if (!data) {
                 this.posts = [];
-                this.homePage.updatePosts([]);
+                this.homePage.updatePosts([], false);
                 this.loader.dismiss("No Data");
                 return;
             }
@@ -91,12 +115,16 @@ export class App {
                 space: p.space || '此间'
             }));
             
-            this.filterPostsBySpace();
+            // 根据路由初始化状态
+            this.initFromRoute();
+            
             this.loader.dismiss("Cloud Synced");
             
             // 启动诗句轮播
             this.timerManager.setTimeout(() => {
-                this.homePage.startPoemCarousel();
+                if (this.currentPage === 'home') {
+                    this.homePage.startPoemCarousel();
+                }
             }, 2000);
             
         } catch(e) {
@@ -106,8 +134,75 @@ export class App {
                 postsCount: this.posts.length
             });
             this.posts = [];
-            this.homePage.updatePosts([]);
+            this.homePage.updatePosts([], false);
             this.loader.dismiss("Error");
+        }
+    }
+
+    initFromRoute() {
+        const route = this.router.getCurrentRoute();
+        
+        if (route.space) {
+            this.currentSpace = route.space;
+            this.spaceNav.updateActive(route.space);
+            this.navigation.updateSpaceIndicator(route.space);
+            this.homePage.updateSpace(route.space);
+        }
+
+        this.filterPostsBySpace();
+
+        if (route.page === 'detail' && route.postId) {
+            const post = this.posts.find(p => p.id === route.postId);
+            if (post) {
+                this.currentPage = 'home'; // set to home first so navigate works
+                this.navigate('detail');
+                this.detailPage.updateContent(post);
+            }
+        } else if (route.page === 'write') {
+            this.currentPage = 'home';
+            this.navigate('write');
+        }
+    }
+
+    handleRouteChange(route) {
+        if (route.page === 'home') {
+            if (route.space && route.space !== this.currentSpace) {
+                this.switchSpace(route.space);
+            } else if (!route.space && this.currentSpace !== '此间') {
+                this.switchSpace('此间');
+            } else {
+                this.navigate('home');
+            }
+        } else if (route.page === 'detail' && route.postId) {
+            const post = this.posts.find(p => p.id === route.postId);
+            if (post) {
+                this.showDetail(post.id);
+            } else {
+                this.navigate('home');
+            }
+        } else if (route.page === 'write') {
+            this.navigate('write');
+        }
+    }
+
+    setupOfflineDetection() {
+        const banner = document.getElementById('offline-banner');
+        
+        window.addEventListener('online', () => {
+            this.isOffline = false;
+            banner?.classList.add('hidden');
+            this.errorMonitor.captureMessage('User back online', 'info');
+        });
+        
+        window.addEventListener('offline', () => {
+            this.isOffline = true;
+            banner?.classList.remove('hidden');
+            this.errorMonitor.captureMessage('User went offline', 'warning');
+        });
+
+        // 初始状态
+        if (this.isOffline) {
+            banner?.classList.remove('hidden');
         }
     }
 
@@ -117,6 +212,27 @@ export class App {
         this.spaceNav.bindEvents();
         this.homePage.bindEvents();
         this.writePage.bindEvents();
+
+        // 搜索事件
+        const searchInput = document.getElementById('search-input');
+        const searchClear = document.getElementById('search-clear');
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.searchQuery = e.target.value.trim();
+                searchClear?.classList.toggle('hidden', !this.searchQuery);
+                this.filterPostsBySpace();
+            });
+        }
+        
+        if (searchClear) {
+            searchClear.addEventListener('click', () => {
+                searchInput.value = '';
+                this.searchQuery = '';
+                searchClear.classList.add('hidden');
+                this.filterPostsBySpace();
+            });
+        }
     }
 
     navigateHome() {
@@ -125,6 +241,7 @@ export class App {
         if (this.currentSpace !== '此间') {
             this.switchSpace('此间');
         }
+        this.router.navigate('home', {});
     }
 
     navigate(page) {
@@ -174,10 +291,12 @@ export class App {
                     if (page === 'write') {
                         this.writePage.setSpace(this.currentSpace);
                         this.writePage.bindEvents();
+                        this.router.navigate('write', {});
                     }
 
                     if (page === 'home') {
                         this.homePage.startPoemCarousel();
+                        this.router.navigate('home', { space: this.currentSpace });
                         requestAnimationFrame(() => {
                             window.scrollTo({ top: this.homeScrollY, behavior: 'instant' });
                         });
@@ -209,6 +328,12 @@ export class App {
         // 更新当前空间
         this.currentSpace = spaceName;
         
+        // 更新路由
+        this.router.replaceRoute('home', { space: spaceName });
+
+        // 重置分页
+        this.currentPageNum = 1;
+        
         // 同时执行：显示诗句动画 + 加载内容
         await Promise.all([
             this.spacePoemOverlay.show(spaceName),
@@ -227,12 +352,31 @@ export class App {
     }
 
     filterPostsBySpace() {
-        const filteredPosts = this.posts.filter(p => p.space === this.currentSpace);
+        let filteredPosts = this.posts.filter(p => p.space === this.currentSpace);
         
-        // 立即开始渲染,不等待
+        // 搜索过滤
+        if (this.searchQuery) {
+            const query = this.searchQuery.toLowerCase();
+            filteredPosts = filteredPosts.filter(p => 
+                (p.title || '').toLowerCase().includes(query) ||
+                (p.content || '').toLowerCase().includes(query) ||
+                (p.author_name || '').toLowerCase().includes(query)
+            );
+        }
+
+        // 分页
+        const totalPosts = filteredPosts.length;
+        const displayPosts = filteredPosts.slice(0, this.currentPageNum * this.pageSize);
+        this.hasMore = displayPosts.length < totalPosts;
+        
         requestAnimationFrame(() => {
-            this.homePage.updatePosts(filteredPosts);
+            this.homePage.updatePosts(displayPosts, this.hasMore);
         });
+    }
+
+    loadMorePosts() {
+        this.currentPageNum++;
+        this.filterPostsBySpace();
     }
 
     async showDetail(postId) {
@@ -240,12 +384,18 @@ export class App {
         if (!post) return;
         this.navigate('detail');
         this.detailPage.updateContent(post);
+        this.router.navigate('detail', { postId: post.id });
     }
 
     async handleImageUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
         
+        if (this.isOffline) {
+            this.showToast('离线状态无法上传图片 ✗');
+            return;
+        }
+
         const statusEl = document.getElementById('upload-status');
         statusEl.textContent = 'Uploading...';
         statusEl.style.opacity = '1';
@@ -291,6 +441,20 @@ export class App {
             this.showToast('请填写标题和内容 ✗');
             return;
         }
+
+        // 密码验证
+        const passwordInput = document.getElementById('in-password');
+        const password = passwordInput?.value?.trim();
+        if (password !== this.publishToken) {
+            this.showToast('发布密码错误 ✗');
+            passwordInput?.focus();
+            return;
+        }
+
+        if (this.isOffline) {
+            this.showToast('离线状态无法发布 ✗');
+            return;
+        }
         
         const btn = document.getElementById('pub-btn');
         btn.disabled = true;
@@ -314,6 +478,7 @@ export class App {
             if (!result) throw new Error('Failed to insert post');
             
             this.writePage.clearForm();
+            if (passwordInput) passwordInput.value = '';
             
             // 重新加载数据
             const data = await this.supabaseService.fetchPosts();
@@ -343,6 +508,7 @@ export class App {
             btn.innerText = "PUBLISH";
         }
     }
+
     showToast(msg) {
         const toast = document.createElement('div');
         toast.className = 'libra-toast';

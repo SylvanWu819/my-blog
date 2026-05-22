@@ -153,6 +153,40 @@ export class SupabaseService {
         }
     }
 
+    async updateReaction(postId, reactions) {
+        try {
+            const response = await RetryManager.retry(
+                () => this.fetchWithTimeout(
+                    `${this.SUPABASE_URL}/rest/v1/posts?id=eq.${postId}`,
+                    {
+                        method: 'PATCH',
+                        headers: {
+                            'apikey': this.SUPABASE_KEY,
+                            'Authorization': `Bearer ${this.SUPABASE_KEY}`,
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=minimal'
+                        },
+                        body: JSON.stringify({ reactions })
+                    }
+                ),
+                2,
+                1000
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            // 清除缓存以便下次获取最新数据
+            this.cache.delete('posts');
+            return true;
+        } catch(e) {
+            const errorType = this.classifyError(e);
+            console.error('Update reaction error:', errorType, e);
+            throw new Error(this.getUserFriendlyMessage(errorType));
+        }
+    }
+
     getUserFriendlyMessage(errorType) {
         const messages = {
             'timeout': '网络连接超时，请检查网络后重试',

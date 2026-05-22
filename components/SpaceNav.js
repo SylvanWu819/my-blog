@@ -1,9 +1,12 @@
 // 左侧空间导航组件
+import { EventManager } from '../services/Utils.js';
+
 export class SpaceNav {
     constructor(onSwitchSpace) {
         this.onSwitchSpace = onSwitchSpace;
         this.spaces = ['此间', '观市', '碎语', '札记', '长文', '途中', '一隅'];
         this.currentSpace = '此间';
+        this.eventManager = new EventManager();
         
         // 触摸手势相关
         this.touchStartX = 0;
@@ -51,7 +54,6 @@ export class SpaceNav {
         const diffX = Math.abs(touchX - this.touchStartX);
         const diffY = Math.abs(touchY - this.touchStartY);
 
-        // 如果垂直移动大于水平移动，认为是滚动
         if (diffY > diffX) {
             this.isScrolling = true;
         }
@@ -67,22 +69,17 @@ export class SpaceNav {
         const diffY = Math.abs(touchEndY - this.touchStartY);
         const timeDiff = Date.now() - this.touchStartTime;
 
-        // 最小滑动距离：50px，最大时间：500ms
         const minDistance = 50;
         const maxTime = 500;
 
-        // 忽略垂直移动过大的情况
         if (diffY > 50) return;
 
-        // 检查是否是有效的滑动
         if (Math.abs(diffX) > minDistance && timeDiff < maxTime) {
             const nav = document.getElementById('space-nav');
             
             if (diffX > 0) {
-                // 右滑：打开导航
                 nav?.classList.add('show');
             } else {
-                // 左滑：关闭导航
                 nav?.classList.remove('show');
             }
         }
@@ -93,30 +90,40 @@ export class SpaceNav {
         const nav = document.getElementById('space-nav');
 
         // 桌面端 hover
-        trigger?.addEventListener('mouseenter', () => nav.classList.add('show'));
-        nav?.addEventListener('mouseleave', () => nav.classList.remove('show'));
+        if (trigger) {
+            this.eventManager.on(trigger, 'mouseenter', () => nav?.classList.add('show'));
+        }
+        if (nav) {
+            this.eventManager.on(nav, 'mouseleave', () => nav.classList.remove('show'));
+        }
 
         // 移动端：点击 trigger 区域切换显示
-        trigger?.addEventListener('click', () => nav.classList.toggle('show'));
+        if (trigger) {
+            this.eventManager.on(trigger, 'click', () => nav?.classList.toggle('show'));
+        }
 
         // 移动端：左滑右滑手势
-        document.addEventListener('touchstart', (e) => this.handleTouchStart(e), false);
-        document.addEventListener('touchmove', (e) => this.handleTouchMove(e), false);
-        document.addEventListener('touchend', (e) => this.handleTouchEnd(e), false);
+        this.eventManager.on(document, 'touchstart', (e) => this.handleTouchStart(e), false);
+        this.eventManager.on(document, 'touchmove', (e) => this.handleTouchMove(e), false);
+        this.eventManager.on(document, 'touchend', (e) => this.handleTouchEnd(e), false);
 
         // 点击导航外部关闭
-        document.addEventListener('click', (e) => {
-            if (!nav.contains(e.target) && !trigger.contains(e.target)) {
+        this.eventManager.on(document, 'click', (e) => {
+            if (nav && trigger && !nav.contains(e.target) && !trigger.contains(e.target)) {
                 nav.classList.remove('show');
             }
         });
 
         document.querySelectorAll('.space-item').forEach(item => {
-            item.addEventListener('click', () => {
+            this.eventManager.on(item, 'click', () => {
                 const space = item.dataset.space;
-                nav.classList.remove('show');
+                nav?.classList.remove('show');
                 this.onSwitchSpace(space);
             });
         });
+    }
+
+    destroy() {
+        this.eventManager.clear();
     }
 }

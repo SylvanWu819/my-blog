@@ -72,7 +72,7 @@ export class WritePage {
             '🎐', '🍁', '🪷', '🕯️', '🍵', '📖', '🎵', '✨'
         ];
         return moods.map(mood =>
-            `<span class="mood-option" data-mood="${mood}">${mood}</span>`
+            `<span class="mood-option" data-mood="${mood}" tabindex="0" role="button" aria-pressed="false">${mood}</span>`
         ).join('');
     }
 
@@ -91,19 +91,25 @@ export class WritePage {
 
     getFormData() {
         return {
-            title: document.getElementById('in-title').value.trim(),
-            content: document.getElementById('in-content').value.trim(),
-            author: document.getElementById('in-author').value.trim() || 'Anon',
-            space: document.getElementById('in-space').value,
+            title: document.getElementById('in-title')?.value.trim() || '',
+            content: document.getElementById('in-content')?.value.trim() || '',
+            author: document.getElementById('in-author')?.value.trim() || 'Anon',
+            space: document.getElementById('in-space')?.value || '此间',
             mood: this.selectedMood
         };
     }
 
     clearForm() {
-        document.getElementById('in-title').value = '';
-        document.getElementById('in-content').value = '';
-        document.getElementById('in-author').value = '';
-        document.getElementById('in-space').value = '此间';
+        const title = document.getElementById('in-title');
+        const content = document.getElementById('in-content');
+        const author = document.getElementById('in-author');
+        const space = document.getElementById('in-space');
+        
+        if (title) title.value = '';
+        if (content) content.value = '';
+        if (author) author.value = '';
+        if (space) space.value = '此间';
+        
         this.selectedMood = null;
         document.querySelectorAll('.mood-option').forEach(el => {
             el.classList.remove('selected');
@@ -111,6 +117,9 @@ export class WritePage {
         });
         this.lastSavedState = null;
         localStorage.removeItem('libra_draft');
+        
+        const wordCount = document.getElementById('word-count');
+        if (wordCount) wordCount.textContent = '0 字';
     }
 
     setSpace(spaceName) {
@@ -143,10 +152,15 @@ export class WritePage {
             if (!draft) return false;
             
             const data = JSON.parse(draft);
-            document.getElementById('in-title').value = data.title || '';
-            document.getElementById('in-content').value = data.content || '';
-            document.getElementById('in-author').value = data.author || '';
-            document.getElementById('in-space').value = data.space || '此间';
+            const title = document.getElementById('in-title');
+            const content = document.getElementById('in-content');
+            const author = document.getElementById('in-author');
+            const space = document.getElementById('in-space');
+            
+            if (title) title.value = data.title || '';
+            if (content) content.value = data.content || '';
+            if (author) author.value = data.author || '';
+            if (space) space.value = data.space || '此间';
             
             if (data.mood) {
                 this.selectMood(data.mood);
@@ -171,7 +185,6 @@ export class WritePage {
     }
 
     bindMoodEvents() {
-        // 绑定心情选择事件
         document.querySelectorAll('.mood-option').forEach(option => {
             this.eventManager.on(option, 'click', () => {
                 this.selectMood(option.dataset.mood);
@@ -226,12 +239,17 @@ export class WritePage {
             });
         }
 
-        // 自动保存草稿
-        const autoSaveHandler = () => this.saveDraft();
-        document.getElementById('in-title')?.addEventListener('input', autoSaveHandler);
-        document.getElementById('in-content')?.addEventListener('input', autoSaveHandler);
-        document.getElementById('in-author')?.addEventListener('input', autoSaveHandler);
-        document.getElementById('in-space')?.addEventListener('change', autoSaveHandler);
+        // 自动保存草稿 - 使用 EventManager 统一管理
+        const autoSaveHandler = Utils.debounce(() => this.saveDraft(), 1000);
+        
+        const titleInput = document.getElementById('in-title');
+        const authorInput = document.getElementById('in-author');
+        const spaceInput = document.getElementById('in-space');
+        
+        if (titleInput) this.eventManager.on(titleInput, 'input', autoSaveHandler);
+        if (contentInput) this.eventManager.on(contentInput, 'input', autoSaveHandler);
+        if (authorInput) this.eventManager.on(authorInput, 'input', autoSaveHandler);
+        if (spaceInput) this.eventManager.on(spaceInput, 'change', autoSaveHandler);
 
         // 恢复草稿
         if (this.restoreDraft()) {

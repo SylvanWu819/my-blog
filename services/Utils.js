@@ -58,6 +58,19 @@ export class Utils {
         return div.textContent || div.innerText || '';
     }
 
+    // HTML 转义（防 XSS）
+    static escapeHtml(str) {
+        if (!str) return '';
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return String(str).replace(/[&<>"']/g, c => map[c]);
+    }
+
     // 生成唯一 ID
     static generateId() {
         return `${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;

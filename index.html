@@ -6,6 +6,7 @@
     <title>LibraNote | 天秤书</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
     <!-- Sentry 错误监控 -->
     <script src="https://browser.sentry-cdn.com/7.91.0/bundle.min.js" crossorigin="anonymous" async></script>
     <link rel="stylesheet" href="styles.css">
@@ -79,8 +80,20 @@
                 <h2 id="space-title" class="text-4xl md:text-6xl font-light serif mb-4">此间。</h2>
                 <p id="poem-display" class="text-gray-400 text-sm serif italic opacity-60">"心远地自偏"</p>
             </div>
+            <!-- 搜索栏 -->
+            <div class="mb-10">
+                <div class="search-wrap">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input id="search-input" type="text" placeholder="搜索文章..." class="search-input" aria-label="搜索文章">
+                    <span id="search-clear" class="search-clear hidden">✕</span>
+                </div>
+            </div>
             <div id="list-container" class="masonry-grid">
                 <!-- 列表动态加载 -->
+            </div>
+            <!-- 加载更多 -->
+            <div id="load-more-wrap" class="hidden text-center mt-12">
+                <button id="load-more-btn" class="text-xs opacity-40 hover:opacity-100 transition-opacity uppercase tracking-widest border border-current px-8 py-3 rounded-full">Load More</button>
             </div>
         </section>
 
@@ -126,7 +139,10 @@
                     </button>
                 <span id="upload-status" class="text-xs opacity-40" aria-live="polite" aria-atomic="true"></span>
             </div>
-            <div class="mt-10 flex justify-end">
+            <div class="mt-10 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-2">
+                    <input id="in-password" type="password" placeholder="发布密码" class="bg-transparent text-xs opacity-60 outline-none border border-current px-4 py-2 rounded w-32" aria-label="发布密码">
+                </div>
                 <button id="pub-btn" class="bg-black text-white dark:bg-white dark:text-black px-12 py-4 font-bold text-xs uppercase tracking-widest" aria-label="发布文章">Publish</button>
             </div>
         </section>
@@ -134,6 +150,11 @@
         <!-- 详情页面 -->
         <section id="detail" class="hidden"></section>
     </main>
+
+    <!-- 离线提示 -->
+    <div id="offline-banner" class="offline-banner hidden">
+        <span>📡 当前处于离线状态，部分功能不可用</span>
+    </div>
 
     <script type="module" src="app.js"></script>
 </body>
