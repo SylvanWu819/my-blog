@@ -2,24 +2,27 @@
 @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.1.0/style.css');
 
 :root { 
-    /* 主色 */
-    --bg: #fafaf8; 
+    /* 主色 - 黛青晨曦 */
+    --bg: #fbfaf8; 
     --text: #1a1a1a; 
-    --accent: #555555; 
-    --border: #eeeeee;
+    --accent: #3f5e7a; 
+    --border: #e7e5df;
     
     /* 色彩梯度 */
     --text-primary: #1a1a1a;
-    --text-secondary: #555555;
-    --text-tertiary: #999999;
+    --text-secondary: #4a5663;
+    --text-tertiary: #94a0ad;
     
-    --bg-primary: #fafaf8;
-    --bg-secondary: #f5f5f3;
-    --bg-tertiary: #efefed;
+    --bg-primary: #fbfaf8;
+    --bg-secondary: #f4f3ef;
+    --bg-tertiary: #ecebe5;
     
-    --accent-primary: #555555;
-    --accent-light: #888888;
-    --accent-lighter: #bbbbbb;
+    --accent-primary: #3f5e7a;
+    --accent-light: #6b89a8;
+    --accent-lighter: #a9bccf;
+
+    /* 晨曦流光渐变 */
+    --dawn-gradient: linear-gradient(120deg, #2f4858 0%, #4a5e8a 38%, #7d6b9e 68%, #c0895e 100%);
     
     /* 功能色 */
     --success: #10b981;
@@ -156,9 +159,43 @@ body::before {
     background-size: 300px 300px;
 }
 
-/* 亮色模式纹理 */
+/* 亮色模式 - 晨曦流光背景 */
 body::before {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(240, 240, 238, 0.3) 100%);
+    opacity: 1;
+    background:
+        radial-gradient(46% 50% at 18% 12%, rgba(122, 152, 196, 0.30) 0%, rgba(122, 152, 196, 0) 70%),
+        radial-gradient(50% 55% at 85% 18%, rgba(201, 162, 122, 0.26) 0%, rgba(201, 162, 122, 0) 72%),
+        radial-gradient(55% 60% at 75% 88%, rgba(150, 134, 184, 0.24) 0%, rgba(150, 134, 184, 0) 74%),
+        radial-gradient(48% 52% at 12% 80%, rgba(120, 170, 168, 0.22) 0%, rgba(120, 170, 168, 0) 72%);
+    background-repeat: no-repeat;
+    background-size: 200% 200%, 200% 200%, 200% 200%, 200% 200%;
+    background-position: 0% 0%, 100% 0%, 100% 100%, 0% 100%;
+    animation: dawn-drift 26s ease-in-out infinite;
+}
+
+@keyframes dawn-drift {
+    0%, 100% {
+        background-position: 0% 0%, 100% 0%, 100% 100%, 0% 100%;
+    }
+    33% {
+        background-position: 20% 18%, 78% 12%, 82% 80%, 14% 88%;
+    }
+    66% {
+        background-position: 8% 14%, 92% 22%, 70% 92%, 22% 74%;
+    }
+}
+
+/* 亮色模式 - 纸张微纹理叠加层 */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 300px 300px;
 }
 
 /* 深色模式星空效果 */
@@ -330,12 +367,20 @@ body.dark::before {
     position: fixed;
     top: 0;
     left: 0;
-    height: 2px;
+    height: 3px;
     width: 0%;
-    background: var(--text);
-    opacity: 0.3;
+    background: var(--dawn-gradient);
+    background-size: 200% 100%;
+    opacity: 0.85;
     z-index: 9999;
     transition: width 0.1s linear;
+    animation: title-shimmer 14s ease-in-out infinite;
+}
+
+.dark #read-progress-bar {
+    background: var(--text);
+    opacity: 0.3;
+    animation: none;
 }
 
 /* 按钮交互 */
@@ -360,6 +405,21 @@ button:disabled {
 /* Publish 按钮特殊样式 */
 #pub-btn {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 亮色模式 - 发布按钮流光渐变 */
+#pub-btn {
+    background: var(--dawn-gradient);
+    background-size: 200% 200%;
+    color: #fff;
+    animation: title-shimmer 14s ease-in-out infinite;
+    box-shadow: 0 6px 18px rgba(47, 72, 88, 0.28);
+}
+.dark #pub-btn {
+    background: #fff;
+    color: #000;
+    animation: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 #pub-btn:hover {
@@ -669,8 +729,25 @@ button:disabled {
 /* 亮色模式毛玻璃增强 */
 .glass {
     background: rgba(255, 255, 255, 0.9);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    border-bottom: 1px solid rgba(63, 94, 122, 0.08);
+    box-shadow: 0 4px 20px rgba(47, 72, 88, 0.05);
+}
+
+/* 顶部 LOGO 流光 */
+#nav-home h1 {
+    background: var(--dawn-gradient);
+    background-size: 220% 220%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: title-shimmer 14s ease-in-out infinite;
+}
+.dark #nav-home h1 {
+    background: none;
+    -webkit-text-fill-color: var(--text);
+    color: var(--text);
+    animation: none;
 }
 
 .dark .glass { 
@@ -684,11 +761,11 @@ button:disabled {
 .post-card-inner {
     transition: all var(--duration-base) var(--ease-out);
     border: none;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.6) 100%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.62) 100%);
     box-shadow: 
-        0 0 0 1px var(--border),
-        0 2px 4px rgba(0, 0, 0, 0.02),
-        0 8px 16px rgba(0, 0, 0, 0.04);
+        0 0 0 1px rgba(63, 94, 122, 0.10),
+        0 2px 6px rgba(47, 72, 88, 0.05),
+        0 12px 28px rgba(47, 72, 88, 0.08);
     height: 100%;
     border-radius: 16px;
     animation: breathe 6s ease-in-out infinite;
@@ -735,12 +812,12 @@ button:disabled {
 }
 
 .post-card:hover .post-card-inner {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.97) 0%, rgba(248, 250, 252, 0.9) 100%);
     transform: translateY(-8px);
     box-shadow: 
-        0 0 0 1px var(--border),
-        0 4px 8px rgba(0, 0, 0, 0.04),
-        0 16px 32px rgba(0, 0, 0, 0.08);
+        0 0 0 1px rgba(63, 94, 122, 0.18),
+        0 6px 14px rgba(47, 72, 88, 0.08),
+        0 22px 44px rgba(47, 72, 88, 0.16);
     animation: none;
 }
 
@@ -772,6 +849,29 @@ button:disabled {
     position: relative;
     padding-bottom: var(--space-6);
 }
+
+/* 亮色模式 - 大标题流光渐变 */
+#space-title {
+    background: var(--dawn-gradient);
+    background-size: 220% 220%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: title-shimmer 14s ease-in-out infinite;
+}
+
+@keyframes title-shimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.dark #space-title {
+    background: none;
+    -webkit-text-fill-color: var(--text);
+    color: var(--text);
+    animation: none;
+}
 #poem-display::after {
     content: '';
     position: absolute;
@@ -779,9 +879,13 @@ button:disabled {
     left: 0;
     width: 40px;
     height: 3px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+    opacity: 0.5;
+    border-radius: 2px;
+}
+.dark #poem-display::after {
     background: linear-gradient(90deg, var(--text), transparent);
     opacity: 0.2;
-    border-radius: 2px;
 }
 .poem-fade { 
     opacity: 0 !important; 
