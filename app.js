@@ -10,6 +10,7 @@ import { SupabaseService } from './services/SupabaseService.js';
 import { ThemeService } from './services/ThemeService.js';
 import { ErrorMonitorService } from './services/ErrorMonitorService.js';
 import { RouterService } from './services/RouterService.js';
+import { FxService } from './services/FxService.js';
 import { TimerManager } from './services/Utils.js';
 
 export class App {
@@ -53,6 +54,7 @@ export class App {
             this.supabaseService
         );
         this.spacePoemOverlay = new SpacePoemOverlay();
+        this.fx = new FxService();
         
         // 状态
         this.posts = [];
@@ -93,6 +95,7 @@ export class App {
         this.bindEvents();
         this.themeService.loadTheme();
         this.setupOfflineDetection();
+        this.fx.init();
         
         // 缩短超时时间到 5 秒
         const timeoutId = this.timerManager.setTimeout(() => {
@@ -371,6 +374,8 @@ export class App {
         
         requestAnimationFrame(() => {
             this.homePage.updatePosts(displayPosts, this.hasMore);
+            // 卡片渲染后重绑特效 (updatePosts 内部再隔一帧渲染, 故延后)
+            requestAnimationFrame(() => requestAnimationFrame(() => this.fx.refresh()));
         });
     }
 
@@ -385,6 +390,7 @@ export class App {
         this.navigate('detail');
         this.detailPage.updateContent(post);
         this.router.navigate('detail', { postId: post.id });
+        requestAnimationFrame(() => this.fx.refresh());
     }
 
     async handleImageUpload(event) {
