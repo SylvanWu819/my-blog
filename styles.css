@@ -1401,10 +1401,18 @@ main {
 .libra-container {
     position: relative;
 }
+/* 取消图标的 mb-8 偏移, 使其在容器内居中, 与光环同心 */
+#loader .libra-svg {
+    margin-bottom: 0;
+}
+/* 光环会向外扩展, 给它与下方文字之间留出安全距离, 避免重叠 */
+#loader .libra-container {
+    margin-bottom: var(--space-12);
+}
 .libra-container::before {
     content: '';
     position: absolute;
-    inset: -34px;
+    inset: -18px;
     border-radius: 50%;
     background: conic-gradient(from 0deg, transparent, var(--accent-light), var(--accent), transparent 62%);
     -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
@@ -1415,7 +1423,7 @@ main {
 .libra-container::after {
     content: '';
     position: absolute;
-    inset: -10px;
+    inset: -12px;
     border-radius: 50%;
     background: radial-gradient(circle, var(--card-glow) 0%, transparent 70%);
     animation: ring-pulse 3s ease-in-out infinite;
