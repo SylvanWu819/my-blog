@@ -1491,3 +1491,181 @@ nav.glass::after {
         transition: none;
     }
 }
+
+
+/* ============================================================
+   ✦ 密码门 (PasswordGate)
+   ============================================================ */
+#password-gate {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, var(--bg) 0%, var(--bg-secondary) 100%);
+    opacity: 0;
+    transition: opacity 0.6s var(--ease-out);
+    overflow: hidden;
+}
+#password-gate.show {
+    opacity: 1;
+}
+#password-gate.unlocked {
+    opacity: 0;
+    transform: scale(1.04);
+    transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out);
+    pointer-events: none;
+}
+
+/* 门内极光 */
+.gate-aurora {
+    position: absolute;
+    inset: -20%;
+    pointer-events: none;
+    background:
+        radial-gradient(34% 34% at 28% 26%, var(--fx-c1), transparent 68%),
+        radial-gradient(40% 40% at 74% 30%, var(--fx-c2), transparent 68%),
+        radial-gradient(44% 44% at 58% 80%, var(--fx-c3), transparent 70%);
+    filter: blur(60px) saturate(160%);
+    opacity: 0.8;
+    animation: aurora-breathe 22s ease-in-out infinite;
+}
+.dark .gate-aurora {
+    opacity: 0.5;
+    mix-blend-mode: screen;
+}
+
+/* 玻璃卡片 */
+.gate-card {
+    position: relative;
+    z-index: 1;
+    width: min(90vw, 380px);
+    padding: var(--space-12) var(--space-10);
+    border-radius: 24px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow:
+        0 0 0 1px var(--card-glow),
+        0 24px 60px rgba(47, 72, 88, 0.18);
+    transform: translateY(12px);
+    transition: transform 0.6s var(--ease-bounce);
+}
+#password-gate.show .gate-card {
+    transform: translateY(0);
+}
+.dark .gate-card {
+    background: rgba(26, 26, 24, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow:
+        0 0 0 1px var(--card-glow),
+        0 24px 60px rgba(0, 0, 0, 0.5);
+}
+.gate-card.shake {
+    animation: gate-shake 0.45s var(--ease-out);
+}
+@keyframes gate-shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-9px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(3px); }
+}
+
+.gate-mark {
+    font-size: var(--text-3xl);
+    font-weight: 700;
+    background: var(--dawn-gradient);
+    background-size: 220% 220%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: title-shimmer 14s ease-in-out infinite;
+    letter-spacing: 0.15em;
+}
+.dark .gate-mark {
+    -webkit-text-fill-color: var(--text);
+    color: var(--text);
+    background: none;
+    animation: none;
+}
+.gate-sub {
+    margin-top: var(--space-3);
+    font-size: var(--text-xs);
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    opacity: 0.4;
+}
+
+.gate-form {
+    margin-top: var(--space-10);
+}
+.gate-field {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: var(--space-2);
+    transition: border-color var(--duration-base) var(--ease-out);
+}
+.gate-field:focus-within {
+    border-color: var(--accent);
+}
+#gate-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: var(--text-base);
+    color: var(--text);
+    letter-spacing: 0.15em;
+    text-align: center;
+    font-family: 'Noto Serif SC', serif;
+}
+#gate-input::placeholder {
+    color: var(--text-tertiary);
+    opacity: 0.6;
+    letter-spacing: 0.2em;
+}
+.gate-enter {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: none;
+    color: #fff;
+    background: var(--dawn-gradient);
+    background-size: 200% 200%;
+    animation: title-shimmer 14s ease-in-out infinite;
+    box-shadow: 0 4px 14px var(--card-glow-strong);
+    transition: transform var(--duration-base) var(--ease-out);
+}
+.gate-enter:hover {
+    transform: scale(1.08);
+}
+.dark .gate-enter {
+    background: #fff;
+    color: #000;
+    animation: none;
+}
+.gate-error {
+    min-height: 1.2em;
+    margin-top: var(--space-4);
+    font-size: var(--text-xs);
+    letter-spacing: 0.1em;
+    color: var(--error);
+    opacity: 0.9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gate-aurora,
+    .gate-mark,
+    .gate-enter { animation: none !important; }
+}

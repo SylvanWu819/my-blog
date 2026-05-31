@@ -6,6 +6,7 @@ import { WritePage } from './components/WritePage.js';
 import { DetailPage } from './components/DetailPage.js';
 import { Loader } from './components/Loader.js';
 import { SpacePoemOverlay } from './components/SpacePoemOverlay.js';
+import { PasswordGate } from './components/PasswordGate.js';
 import { SupabaseService } from './services/SupabaseService.js';
 import { ThemeService } from './services/ThemeService.js';
 import { ErrorMonitorService } from './services/ErrorMonitorService.js';
@@ -529,7 +530,19 @@ export class App {
 }
 
 // 启动应用
-document.addEventListener('DOMContentLoaded', () => {
+// ⚠️ 方案 C 前端密码门: 仅防普通访客, 非真正加密。详见 components/PasswordGate.js
+document.addEventListener('DOMContentLoaded', async () => {
+    const gate = new PasswordGate({
+        // libra2024 的 SHA-256 哈希。改密码: 把新密码的 SHA-256 填到这里
+        // (可在浏览器控制台运行下面这行得到哈希, 把 你的密码 换掉):
+        //   crypto.subtle.digest('SHA-256', new TextEncoder().encode('你的密码')).then(b=>console.log(Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('')))
+        passwordHash: '46377e2efc7d9c55a31e423fefb136bd6247ba04d4dfa165ad52c234af484632',
+        ttlHours: 720 // 解锁后 30 天内免再输
+    });
+
+    // 通过密码门后再启动应用
+    await gate.guard();
+
     const app = new App();
     app.init();
 });
