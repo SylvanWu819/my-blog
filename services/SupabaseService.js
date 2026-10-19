@@ -1,12 +1,24 @@
 // Supabase数据服务
 import { RetryManager, CacheManager } from './Utils.js';
+import { SUPABASE_URL, SUPABASE_KEY } from './SupabaseConfig.js';
 
 export class SupabaseService {
-    constructor() {
-        this.SUPABASE_URL = 'https://oldqgyflcveawfxopqgn.supabase.co';
-        this.SUPABASE_KEY = 'sb_publishable_xo2kwCcjhNv7KrJ1z79Maw_e-Debb6n';
+    constructor(getAccessToken) {
+        this.SUPABASE_URL = SUPABASE_URL;
+        this.SUPABASE_KEY = SUPABASE_KEY;
+        this.getAccessToken = getAccessToken;
         this.cache = new CacheManager(5 * 60 * 1000); // 5 分钟缓存
         this.requestTimeout = 10000; // 10 秒超时
+    }
+
+    async authHeaders(extra = {}) {
+        const token = await this.getAccessToken?.();
+        if (!token) throw new Error('登录已过期，请重新登录');
+        return {
+            'apikey': this.SUPABASE_KEY,
+            'Authorization': `Bearer ${token}`,
+            ...extra
+        };
     }
 
     // 带超时的 fetch
@@ -48,13 +60,10 @@ export class SupabaseService {
 
         try {
             const response = await RetryManager.retry(
-                () => this.fetchWithTimeout(
+                async () => this.fetchWithTimeout(
                     `${this.SUPABASE_URL}/rest/v1/posts?select=*&order=timestamp.desc`,
                     {
-                        headers: {
-                            'apikey': this.SUPABASE_KEY,
-                            'Authorization': `Bearer ${this.SUPABASE_KEY}`
-                        }
+                        headers: await this.authHeaders()
                     }
                 ),
                 3,
@@ -65,7 +74,8 @@ export class SupabaseService {
                 throw new Error(`HTTP ${response.status}`);
             }
 
-            const data = await response.json();
+            const rawData = await response.json();
+            const data = await Promise.all(rawData.map(post => this.signPostImages(post)));
             this.cache.set('posts', data);
             return data;
         } catch(e) {
@@ -78,16 +88,14 @@ export class SupabaseService {
     async insertPost(post) {
         try {
             const response = await RetryManager.retry(
-                () => this.fetchWithTimeout(
+                async () => this.fetchWithTimeout(
                     `${this.SUPABASE_URL}/rest/v1/posts`,
                     {
                         method: 'POST',
-                        headers: {
-                            'apikey': this.SUPABASE_KEY,
-                            'Authorization': `Bearer ${this.SUPABASE_KEY}`,
+                        headers: await this.authHeaders({
                             'Content-Type': 'application/json',
                             'Prefer': 'return=representation'
-                        },
+                        }),
                         body: JSON.stringify(post)
                     }
                 ),
@@ -125,14 +133,11 @@ export class SupabaseService {
             const fileName = `${timestamp}_${randomStr}.${ext}`;
             
             const response = await RetryManager.retry(
-                () => this.fetchWithTimeout(
+                async () => this.fetchWithTimeout(
                     `${this.SUPABASE_URL}/storage/v1/object/post-images/${fileName}`,
                     {
                         method: 'POST',
-                        headers: {
-                            'apikey': this.SUPABASE_KEY,
-                            'Authorization': `Bearer ${this.SUPABASE_KEY}`
-                        },
+                        headers: await this.authHeaders(),
                         body: file
                     }
                 ),
@@ -145,7 +150,8 @@ export class SupabaseService {
                 throw new Error(`Upload failed: ${error}`);
             }
             
-            return `${this.SUPABASE_URL}/storage/v1/object/public/post-images/${fileName}`;
+            // 数据库只保存稳定的内部引用，展示时再换成短期签名 URL。
+            return `supabase://post-images/${fileName}`;
         } catch(e) {
             const errorType = this.classifyError(e);
             console.error('Image upload error:', errorType, e);
@@ -156,16 +162,14 @@ export class SupabaseService {
     async updateReaction(postId, reactions) {
         try {
             const response = await RetryManager.retry(
-                () => this.fetchWithTimeout(
+                async () => this.fetchWithTimeout(
                     `${this.SUPABASE_URL}/rest/v1/posts?id=eq.${postId}`,
                     {
                         method: 'PATCH',
-                        headers: {
-                            'apikey': this.SUPABASE_KEY,
-                            'Authorization': `Bearer ${this.SUPABASE_KEY}`,
+                        headers: await this.authHeaders({
                             'Content-Type': 'application/json',
                             'Prefer': 'return=minimal'
-                        },
+                        }),
                         body: JSON.stringify({ reactions })
                     }
                 ),
@@ -198,6 +202,60 @@ export class SupabaseService {
             'unknown': '发生未知错误，请稍后重试'
         };
         return messages[errorType] || messages['unknown'];
+    }
+
+    async createSignedImageUrl(path) {
+        const safePath = path.split('/').map(encodeURIComponent).join('/');
+        const response = await this.fetchWithTimeout(
+            `${this.SUPABASE_URL}/storage/v1/object/sign/post-images/${safePath}`,
+            {
+                method: 'POST',
+                headers: await this.authHeaders({ 'Content-Type': 'application/json' }),
+                body: JSON.stringify({ expiresIn: 3600 })
+            }
+        );
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const data = await response.json();
+        if (!data.signedURL) throw new Error('签名图片地址生成失败');
+        return data.signedURL.startsWith('http')
+            ? data.signedURL
+            : `${this.SUPABASE_URL}/storage/v1${data.signedURL}`;
+    }
+
+    async signPostImages(post) {
+        const content = post.content || '';
+        const references = new Map();
+        const internalPattern = /supabase:\/\/post-images\/([^\s)]+)/g;
+        const legacyPattern = new RegExp(
+            `${this.SUPABASE_URL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/storage/v1/object/public/post-images/([^\\s)]+)`,
+            'g'
+        );
+
+        for (const match of content.matchAll(internalPattern)) {
+            references.set(match[0], decodeURIComponent(match[1]));
+        }
+        for (const match of content.matchAll(legacyPattern)) {
+            references.set(match[0], decodeURIComponent(match[1]));
+        }
+        if (references.size === 0) return post;
+
+        const signed = await Promise.all(
+            [...references.entries()].map(async ([source, path]) => {
+                try {
+                    return [source, await this.createSignedImageUrl(path)];
+                } catch (error) {
+                    console.warn('Failed to sign image URL:', path, error);
+                    return [source, source];
+                }
+            })
+        );
+
+        let signedContent = content;
+        signed.forEach(([source, url]) => {
+            signedContent = signedContent.split(source).join(url);
+        });
+        return { ...post, content: signedContent };
     }
 
     clearCache() {

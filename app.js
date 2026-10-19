@@ -13,9 +13,10 @@ import { ErrorMonitorService } from './services/ErrorMonitorService.js';
 import { RouterService } from './services/RouterService.js';
 import { FxService } from './services/FxService.js';
 import { TimerManager } from './services/Utils.js';
+import { AuthService } from './services/AuthService.js';
 
 export class App {
-    constructor() {
+    constructor(authService) {
         // 初始化错误监控 (最先初始化)
         this.errorMonitor = new ErrorMonitorService();
         this.errorMonitor.setupGlobalErrorHandlers();
@@ -24,7 +25,8 @@ export class App {
         this.errorMonitor.initSentry('https://42aa60a27615496b571824fe6e2a6db9@o4511189294514176.ingest.de.sentry.io/4511189313257552');
         
         // 初始化服务
-        this.supabaseService = new SupabaseService();
+        this.authService = authService;
+        this.supabaseService = new SupabaseService(() => this.authService.getAccessToken());
         this.themeService = new ThemeService();
         this.timerManager = new TimerManager();
         
@@ -74,9 +76,6 @@ export class App {
         
         // 离线状态
         this.isOffline = !navigator.onLine;
-        
-        // 发布密码 (简单 token 验证)
-        this.publishToken = 'libra2024';
         
         // 生成用户ID用于追踪
         this.userId = this.getUserId();
@@ -215,7 +214,11 @@ export class App {
         this.navigation.bindEvents();
         this.spaceNav.bindEvents();
         this.homePage.bindEvents();
-        this.writePage.bindEvents();
+
+        document.getElementById('nav-logout')?.addEventListener('click', async () => {
+            await this.authService.signOut();
+            window.location.reload();
+        });
 
         // 搜索事件
         const searchInput = document.getElementById('search-input');
@@ -449,15 +452,6 @@ export class App {
             return;
         }
 
-        // 密码验证
-        const passwordInput = document.getElementById('in-password');
-        const password = passwordInput?.value?.trim();
-        if (password !== this.publishToken) {
-            this.showToast('发布密码错误 ✗');
-            passwordInput?.focus();
-            return;
-        }
-
         if (this.isOffline) {
             this.showToast('离线状态无法发布 ✗');
             return;
@@ -485,8 +479,6 @@ export class App {
             if (!result) throw new Error('Failed to insert post');
             
             this.writePage.clearForm();
-            if (passwordInput) passwordInput.value = '';
-            
             // 重新加载数据
             const data = await this.supabaseService.fetchPosts();
             if (data) {
@@ -530,19 +522,15 @@ export class App {
 }
 
 // 启动应用
-// ⚠️ 方案 C 前端密码门: 仅防普通访客, 非真正加密。详见 components/PasswordGate.js
 document.addEventListener('DOMContentLoaded', async () => {
+    const authService = new AuthService();
     const gate = new PasswordGate({
-        // libra2024 的 SHA-256 哈希。改密码: 把新密码的 SHA-256 填到这里
-        // (可在浏览器控制台运行下面这行得到哈希, 把 你的密码 换掉):
-        //   crypto.subtle.digest('SHA-256', new TextEncoder().encode('你的密码')).then(b=>console.log(Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('')))
-        passwordHash: '46377e2efc7d9c55a31e423fefb136bd6247ba04d4dfa165ad52c234af484632',
-        ttlHours: 720 // 解锁后 30 天内免再输
+        authService
     });
 
     // 通过密码门后再启动应用
     await gate.guard();
 
-    const app = new App();
+    const app = new App(authService);
     app.init();
 });

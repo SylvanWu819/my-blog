@@ -1623,8 +1623,14 @@ nav.glass::after {
 .gate-field:focus-within {
     border-color: var(--accent);
 }
-#gate-input {
+.gate-inputs {
     flex: 1;
+    display: grid;
+    gap: var(--space-3);
+}
+.gate-input {
+    flex: 1;
+    width: 100%;
     background: transparent;
     border: none;
     outline: none;
@@ -1634,10 +1640,14 @@ nav.glass::after {
     text-align: center;
     font-family: 'Noto Serif SC', serif;
 }
-#gate-input::placeholder {
+.gate-input::placeholder {
     color: var(--text-tertiary);
     opacity: 0.6;
     letter-spacing: 0.2em;
+}
+.gate-enter:disabled {
+    cursor: wait;
+    opacity: 0.55;
 }
 .gate-enter {
     flex-shrink: 0;

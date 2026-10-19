@@ -5,7 +5,7 @@
 ## 技术栈
 
 - 原生 JavaScript (ES6 Modules)
-- Tailwind CSS · Marked.js · Supabase · Sentry
+- Tailwind CSS · Marked.js · Supabase Auth/Database/Storage · Sentry
 
 ## 本地运行
 
@@ -37,7 +37,9 @@ deploy.bat
 └── services/          # SupabaseService · ThemeService · ErrorMonitorService
 ```
 
-## 配置
+## 安全配置
 
-- Supabase 需开启 CORS，创建 `post-images` bucket
+- 在 Supabase Authentication 中创建登录账号并关闭公开注册
+- 在 Supabase SQL Editor 执行 `supabase-security.sql`，启用 RLS 和 Storage Policy
+- Supabase 需创建 private 的 `post-images` bucket；应用会为图片生成短期签名 URL
 - Sentry DSN 在 `app.js` 中配置（可选）
