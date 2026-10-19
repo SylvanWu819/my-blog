@@ -7,6 +7,15 @@ export class HomePage {
         this.onLoadMore = onLoadMore;
         this.posts = [];
         this.currentSpace = '此间';
+        this.spaceMeta = {
+            '此间': { index: '01', en: 'HERE' },
+            '观市': { index: '02', en: 'MARKET' },
+            '碎语': { index: '03', en: 'FRAGMENTS' },
+            '札记': { index: '04', en: 'NOTES' },
+            '长文': { index: '05', en: 'ESSAYS' },
+            '途中': { index: '06', en: 'JOURNEY' },
+            '一隅': { index: '07', en: 'CORNER' }
+        };
         this.poems = [
             '心远地自偏', '行到水穷处', '坐看云起时', '此中有真意', 
             '悠然见南山', '山气日夕佳', '飞鸟相与还', '采菊东篱下',
@@ -21,7 +30,8 @@ export class HomePage {
     render() {
         return `
             <section id="home">
-                <div class="mb-20">
+                <div class="space-hero mb-20">
+                    <p id="space-kicker" class="space-kicker">01 / PRIVATE NOTES · HERE</p>
                     <h2 id="space-title" class="text-4xl md:text-6xl font-light serif mb-4">${this.currentSpace}。</h2>
                     <p id="poem-display" class="text-gray-400 text-sm serif italic opacity-60">"${this.poems[0]}"</p>
                 </div>
@@ -41,29 +51,34 @@ export class HomePage {
             return `
                 <div class="empty-state">
                     <p class="text-gray-400 text-sm opacity-60 mb-4">这里还没有内容</p>
-                    <p class="text-gray-400 text-xs opacity-40">点击右上角 Write 开始记录你的第一篇文章</p>
+                    <p class="text-gray-400 text-xs opacity-40">点击右上角「书写」开始记录你的第一篇文章</p>
                 </div>
             `;
         }
 
         return this.posts.map((p, index) => {
             const imageUrl = Utils.extractImageUrl(p.content);
+            const isFeatured = index === 0;
             const animationDelay = index * 0.08;
             const contentPreview = (p.content || '')
                 .replace(/!\[.*?\]\(.*?\)/g, '')
                 .replace(/\n/g, ' ')
-                .substring(0, 150);
+                .substring(0, isFeatured ? 220 : 130);
             
             return `
-                <div class="post-card cursor-pointer" data-post-id="${p.id}" role="article" tabindex="0" aria-label="文章: ${Utils.escapeHtml(p.title)}">
+                <div class="post-card ${isFeatured ? 'post-card-featured' : ''} ${imageUrl ? 'has-image' : 'no-image'} cursor-pointer" data-post-id="${p.id}" role="article" tabindex="0" aria-label="文章: ${Utils.escapeHtml(p.title)}">
                     <div class="post-card-inner p-8" style="animation-delay: ${animationDelay}s">
                         ${imageUrl ? `<img src="${imageUrl}" alt="${Utils.escapeHtml(p.title)}" class="post-preview-image" loading="lazy" decoding="async" data-src="${imageUrl}">` : ''}
-                        <div class="flex items-center gap-2 mb-4">
-                            <div class="text-[9px] opacity-30 tracking-widest uppercase">${this.formatDate(p.date)}</div>
-                            ${p.mood ? `<span class="text-lg" aria-label="心情: ${p.mood}">${p.mood}</span>` : ''}
+                        <div class="post-card-copy">
+                            <div class="post-card-meta">
+                                <span class="article-no">NO.${String(index + 1).padStart(2, '0')}</span>
+                                <span>${this.formatDate(p.date)}</span>
+                                ${p.mood ? `<span class="text-lg" aria-label="心情: ${p.mood}">${p.mood}</span>` : ''}
+                            </div>
+                            <h3>${Utils.escapeHtml(p.title)}</h3>
+                            <p class="post-card-excerpt">${Utils.escapeHtml(contentPreview)}</p>
+                            <span class="post-card-read">阅读全文 <i>READ</i> →</span>
                         </div>
-                        <h3 class="text-xl font-bold serif mb-3">${Utils.escapeHtml(p.title)}</h3>
-                        <p class="text-gray-400 text-sm line-clamp-3 leading-relaxed serif italic opacity-80">${Utils.escapeHtml(contentPreview)}</p>
                     </div>
                 </div>
             `;
@@ -142,7 +157,11 @@ export class HomePage {
 
     updateSpace(spaceName) {
         this.currentSpace = spaceName;
+        document.body.dataset.space = spaceName;
         const title = document.getElementById('space-title');
+        const kicker = document.getElementById('space-kicker');
+        const meta = this.spaceMeta[spaceName] || { index: '00', en: 'SPACE' };
+        if (kicker) kicker.textContent = `${meta.index} / PRIVATE NOTES · ${meta.en}`;
         if (title) {
             title.style.opacity = '0';
             title.style.transform = 'translateY(6px)';

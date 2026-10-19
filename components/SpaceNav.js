@@ -5,6 +5,7 @@ export class SpaceNav {
     constructor(onSwitchSpace) {
         this.onSwitchSpace = onSwitchSpace;
         this.spaces = ['此间', '观市', '碎语', '札记', '长文', '途中', '一隅'];
+        this.spaceEnglish = ['HERE', 'MARKET', 'FRAGMENTS', 'NOTES', 'ESSAYS', 'JOURNEY', 'CORNER'];
         this.currentSpace = '此间';
         this.eventManager = new EventManager();
         
@@ -20,9 +21,10 @@ export class SpaceNav {
             <div class="space-trigger"></div>
             <nav id="space-nav">
                 ${this.spaces.map((space, index) => `
-                    <div class="space-item ${index === 0 ? 'active' : ''} serif" 
-                         data-space="${space}">
-                        ${space}
+                    <div class="space-item ${index === 0 ? 'active' : ''} serif" data-space="${space}">
+                        <span class="space-order">${String(index + 1).padStart(2, '0')}</span>
+                        <span>${space}</span>
+                        <small>${this.spaceEnglish[index]}</small>
                     </div>
                 `).join('')}
             </nav>

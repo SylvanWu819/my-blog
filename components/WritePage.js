@@ -17,13 +17,13 @@ export class WritePage {
             <section id="write" class="hidden">
                 <div class="mb-10 flex flex-col gap-6">
                     <div class="write-field-wrap pb-2">
-                        <input id="in-title" type="text" placeholder="TITLE" class="bg-transparent text-4xl font-bold serif outline-none border-none w-full">
+                        <input id="in-title" type="text" placeholder="标题 / TITLE" class="bg-transparent text-4xl font-bold serif outline-none border-none w-full">
                     </div>
                     <div class="write-field-wrap pb-2">
-                        <input id="in-author" type="text" placeholder="Author Name" class="bg-transparent text-sm opacity-60 outline-none border-none w-full">
+                        <input id="in-author" type="text" placeholder="署名 / AUTHOR" class="bg-transparent text-sm opacity-60 outline-none border-none w-full">
                     </div>
                     <div>
-                        <p class="text-xs opacity-40 mb-3 uppercase tracking-widest">Space · 发布至</p>
+                        <p class="text-xs opacity-40 mb-3 uppercase tracking-widest">发布至 · SPACE</p>
                         <select id="in-space" class="bg-transparent text-lg serif opacity-80 outline-none border border-current px-4 py-3 rounded cursor-pointer hover:opacity-100 transition-opacity w-full">
                             <option value="此间">此间</option>
                             <option value="观市">观市</option>
@@ -35,14 +35,14 @@ export class WritePage {
                         </select>
                     </div>
                     <div>
-                        <p class="text-xs opacity-40 mb-3 uppercase tracking-widest">Mood</p>
+                        <p class="text-xs opacity-40 mb-3 uppercase tracking-widest">心绪 · MOOD</p>
                         <div class="mood-selector">
                             ${this.renderMoodOptions()}
                         </div>
                     </div>
                 </div>
                 <div class="write-field-wrap pb-2">
-                    <textarea id="in-content" rows="12" placeholder="Start recording..." class="w-full text-lg bg-transparent outline-none resize-none leading-relaxed border-none"></textarea>
+                    <textarea id="in-content" rows="12" placeholder="从此处开始记录…" class="w-full text-lg bg-transparent outline-none resize-none leading-relaxed border-none"></textarea>
                 </div>
                 <div class="mt-2 flex justify-end">
                     <span id="word-count" class="text-[10px] opacity-20 tracking-widest">0 字</span>
@@ -50,12 +50,12 @@ export class WritePage {
                 <div class="mt-6 flex items-center gap-4">
                     <input type="file" id="image-upload" accept="image/*" style="display:none">
                     <button id="add-image-btn" class="text-xs opacity-40 hover:opacity-100 transition-opacity flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Add Image
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> 加入图片 IMAGE
                     </button>
                     <span id="upload-status" class="text-xs opacity-40"></span>
                 </div>
                 <div class="mt-10 flex justify-end">
-                    <button id="pub-btn" class="bg-black text-white dark:bg-white dark:text-black px-12 py-4 font-bold text-xs uppercase tracking-widest">Publish</button>
+                    <button id="pub-btn" class="bg-black text-white dark:bg-white dark:text-black px-12 py-4 font-bold text-xs uppercase tracking-widest">发布 PUBLISH</button>
                 </div>
             </section>
         `;

@@ -504,7 +504,7 @@ export class App {
             this.showToast('发布失败: ' + e.message);
         } finally {
             btn.disabled = false;
-            btn.innerText = "PUBLISH";
+            btn.innerText = "发布 PUBLISH";
         }
     }
 

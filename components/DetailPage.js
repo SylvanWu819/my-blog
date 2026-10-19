@@ -62,7 +62,7 @@ export class DetailPage {
                 <div id="read-progress-bar" role="progressbar" aria-label="阅读进度" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                 <div class="max-w-3xl mx-auto px-8">
                     <button id="back-btn" class="group flex items-center gap-2 text-[10px] opacity-40 uppercase tracking-widest mb-12 hover:opacity-100 transition-opacity" aria-label="返回">
-                        <span class="inline-block transition-transform group-hover:-translate-x-1">←</span> Back
+                        <span class="inline-block transition-transform group-hover:-translate-x-1">←</span> 返回 BACK
                     </button>
                     <div class="flex items-center gap-3 mb-4">
                         <h1 class="text-3xl md:text-5xl font-bold serif">${Utils.escapeHtml(post.title)}</h1>
